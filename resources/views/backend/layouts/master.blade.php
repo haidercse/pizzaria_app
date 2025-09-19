@@ -42,7 +42,7 @@
     <!-- jquery latest version -->
 
     @include('backend.layouts.partials.scripts')
-
+    @stack('scripts')
 </body>
 
 </html>

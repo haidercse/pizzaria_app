@@ -307,24 +307,70 @@ class TaskController extends Controller
         }
     }
 
-    public function dailyTaskListForUser()
+    public function checklist(Request $request)
     {
-        $tasks = Task::whereMonth('date', now()->month)
-            ->whereYear('date', now()->year)
-            ->orderBy('date')
-            ->get()
-            ->groupBy(function ($task) {
-                return $task->date->format('d') . '_' . $task->day_time;
-            });
+        $query = Task::where('day_time', 'daily');
+
+        if ($request->has('month') && $request->month != '') {
+            $yearMonth = explode('-', $request->month);
+            $year = $yearMonth[0];
+            $month = $yearMonth[1];
+
+            $query->whereYear('date', $year)
+                ->whereMonth('date', $month);
+        }
+
+        $tasks = $query->orderBy('date', 'ASC')->get()->groupBy('date');
 
         return view('backend.pages.task.daily_task_checklist', compact('tasks'));
     }
-    public function toggleCompleteForUser(Request $request, $id)
+
+    public function updateChecklist(Request $request)
     {
-        $task = Task::findOrFail($id);
-        $task->completed_at = $task->completed_at ? null : now();
+        $task = Task::findOrFail($request->id);
+
+        $doneStates = $task->is_done ?? [];
+
+        if (!is_array($doneStates)) {
+            $doneStates = [];
+        }
+
+        $doneStates[$request->index] = (int) $request->is_done;
+
+        $task->is_done = $doneStates;
         $task->save();
 
-        return response()->json(['success' => true, 'completed' => $task->completed_at]);
+        return response()->json([
+            'success' => true,
+            'saved'   => $doneStates
+        ]);
+    }
+
+    public function userChecklist()
+    {
+        $today = now()->toDateString();
+
+        $tasks = Task::where('day_time', 'daily')
+            ->whereDate('date', $today)
+            ->get();
+
+        return view('backend.pages.task.user_task_checklist', compact('tasks', 'today'));
+    }
+
+    public function updateUserChecklist(Request $request)
+    {
+        $task = Task::findOrFail($request->id);
+
+        $doneStates = $task->is_done ?? [];
+        if (!is_array($doneStates)) {
+            $doneStates = [];
+        }
+
+        $doneStates[$request->index] = (int) $request->is_done;
+
+        $task->is_done = $doneStates;
+        $task->save();
+
+        return response()->json(['success' => true]);
     }
 }

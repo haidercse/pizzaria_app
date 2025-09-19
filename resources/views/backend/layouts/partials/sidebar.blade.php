@@ -101,7 +101,7 @@
                             <span>Profile</span></a>
                     </li>
                     <li
-                        class="{{ request()->routeIs('tasks.index') || request()->routeIs('tasks.create') || request()->routeIs('tasks.edit') || request()->routeIs('tasks.opening.index') || request()->routeIs('tasks.closing.index') || request()->routeIs('tasks.monthly.matrix') || request()->routeIs('tasks.daily') ? 'active' : '' }}">
+                        class="{{ request()->routeIs('tasks.index') || request()->routeIs('tasks.create') || request()->routeIs('tasks.edit') || request()->routeIs('tasks.opening.index') || request()->routeIs('tasks.closing.index') || request()->routeIs('tasks.monthly.matrix') || request()->routeIs('tasks.daily') || request()->routeIs('tasks.checklist') || request()->routeIs('user.tasks.checklist') ? 'active' : '' }}">
                         <a href="javascript:void(0)" aria-expanded="true"><span>Tasks</span></a>
                         <ul class="collapse">
 
@@ -121,6 +121,10 @@
                                     href="{{ route('tasks.monthly.matrix') }}"> Task Monthly Matrix</a></li>
                             <li class="{{ request()->routeIs('tasks.daily') ? 'active' : '' }}"><a
                                     href="{{ route('tasks.daily') }}"> Daily Task Show and Edit </a></li>
+                            <li class="{{ request()->routeIs('tasks.checklist') ? 'active' : '' }}"><a
+                                    href="{{ route('tasks.checklist') }}"> Daily Task checklist for full month </a></li>
+                            <li class="{{ request()->routeIs('user.tasks.checklist') ? 'active' : '' }}"><a
+                                    href="{{ route('user.tasks.checklist') }}"> Daily Task checklist for Employee </a></li>
                         </ul>
                     </li>
 
