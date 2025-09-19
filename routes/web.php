@@ -62,8 +62,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/tasks/daily-tasks/{id}', [TaskController::class, 'taskDailyDestroy'])->name('tasks.daily.destroy');
 
     //task list for user and checklist
-    Route::get('/tasks/user', [TaskController::class, 'dailyTaskListForUser'])->name('tasks.user');
-    Route::post('/tasks/{id}/toggle-complete', [TaskController::class, 'toggleCompleteForUser'])->name('tasks.toggleComplete.user');
+    Route::get('/tasks/checklist', [TaskController::class, 'checklist'])->name('tasks.checklist');
+    Route::post('/tasks/checklist/update', [TaskController::class, 'updateChecklist'])->name('tasks.checklist.update');
+
+    //task list for user and checklist
+    Route::get('/user/tasks/checklist', [TaskController::class, 'userChecklist'])->name('user.tasks.checklist');
+    Route::post('/user/tasks/checklist/update', [TaskController::class, 'updateUserChecklist'])->name('user.tasks.checklist.update');
+
+
     // Logout Route
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });
