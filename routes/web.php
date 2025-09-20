@@ -3,6 +3,7 @@
 use App\Http\Controllers\admin\AdminController;
 use App\Http\Controllers\admin\AuthController;
 use App\Http\Controllers\admin\DoughController;
+use App\Http\Controllers\admin\EmployeeAvailabilityController;
 use App\Http\Controllers\admin\TaskController;
 use App\Http\Controllers\admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -69,6 +70,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/user/tasks/checklist', [TaskController::class, 'userChecklist'])->name('user.tasks.checklist');
     Route::post('/user/tasks/checklist/update', [TaskController::class, 'updateUserChecklist'])->name('user.tasks.checklist.update');
 
+    Route::get('/availability', [EmployeeAvailabilityController::class, 'index'])->name('availability.index');
+    Route::get('/availability/create', [EmployeeAvailabilityController::class, 'create'])->name('availability.create');
+    Route::post('/availability/store', [EmployeeAvailabilityController::class, 'store'])->name('availability.store');
+    Route::get('/availability/{id}/edit', [EmployeeAvailabilityController::class, 'edit'])->name('availability.edit');
+    Route::put('/availability/{id}', [EmployeeAvailabilityController::class, 'update'])->name('availability.update');
+    Route::delete('/availability/{id}', [EmployeeAvailabilityController::class, 'destroy'])->name('availability.destroy');
 
     // Logout Route
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
