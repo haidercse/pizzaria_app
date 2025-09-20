@@ -95,6 +95,17 @@
                                     href="{{ route('users.index') }}">Employee List</a></li>
                         </ul>
                     </li>
+                    <li
+                        class="{{ request()->routeIs('availability.index') || request()->routeIs('availability.create') ? 'active' : '' }}">
+                        <a href="javascript:void(0)" aria-expanded="true">
+                            <span>Shift</span></a>
+                        <ul class="collapse">
+                            <li class="{{ request()->routeIs('availability.index') ? 'active' : '' }}"><a
+                                    href="{{ route('availability.index') }}">Shift Availability</a></li>
+                            <li class="{{ request()->routeIs('availability.create') ? 'active' : '' }}"><a
+                                    href="{{ route('availability.create') }}">Set Shift Availability</a></li>
+                        </ul>
+                    </li>
                     <li class="{{ request()->routeIs('profile') ? 'active' : '' }}">
                         <a class="{{ request()->routeIs('profile') ? 'active' : '' }}" href="{{ route('profile') }}"
                             aria-expanded="true">
