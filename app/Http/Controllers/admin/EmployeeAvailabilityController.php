@@ -26,39 +26,39 @@ class EmployeeAvailabilityController extends Controller
     }
 
     // Store data
-   public function store(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'date.*' => 'required|date',
-        'preferred_time.*' => 'required|in:morning,evening,full_day,custom',
-        'start_time.*' => 'nullable|required_if:preferred_time.*,custom|date_format:H:i',
-        'end_time.*' => 'nullable|required_if:preferred_time.*,custom|date_format:H:i|after:start_time.*',
-        'note.*' => 'nullable|string|max:255',
-    ], [
-        'date.*.required' => 'Date is required for all rows',
-        'preferred_time.*.required' => 'Preferred time is required',
-        'start_time.*.required_if' => 'Start time required for custom shift',
-        'end_time.*.required_if' => 'End time required for custom shift',
-        'end_time.*.after' => 'End time must be after Start time',
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()->all()], 422);
-    }
-
-    foreach ($request->date as $i => $date) {
-        EmployeeAvailability::create([
-            'employee_id'   => auth()->id(),
-            'date'          => $date,
-            'preferred_time'=> $request->preferred_time[$i],
-            'start_time'    => $request->start_time[$i] ?? null,
-            'end_time'      => $request->end_time[$i] ?? null,
-            'note'          => $request->note[$i] ?? null,
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'date.*' => 'required|date',
+            'preferred_time.*' => 'required|in:morning,evening,full_day,custom',
+            'start_time.*' => 'nullable|required_if:preferred_time.*,custom|date_format:H:i',
+            'end_time.*' => 'nullable|required_if:preferred_time.*,custom|date_format:H:i|after:start_time.*',
+            'note.*' => 'nullable|string|max:255',
+        ], [
+            'date.*.required' => 'Date is required for all rows',
+            'preferred_time.*.required' => 'Preferred time is required',
+            'start_time.*.required_if' => 'Start time required for custom shift',
+            'end_time.*.required_if' => 'End time required for custom shift',
+            'end_time.*.after' => 'End time must be after Start time',
         ]);
-    }
 
-    return response()->json(['success' => '✅ Availability saved successfully!']);
-}
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()->all()], 422);
+        }
+
+        foreach ($request->date as $i => $date) {
+            EmployeeAvailability::create([
+                'employee_id'   => auth()->id(),
+                'date'          => $date,
+                'preferred_time' => $request->preferred_time[$i],
+                'start_time'    => $request->start_time[$i] ?? null,
+                'end_time'      => $request->end_time[$i] ?? null,
+                'note'          => $request->note[$i] ?? null,
+            ]);
+        }
+
+        return response()->json(['success' => '✅ Availability saved successfully!']);
+    }
 
 
     // Edit availability
@@ -75,22 +75,36 @@ class EmployeeAvailabilityController extends Controller
     // Update availability
     public function update(Request $request, $id)
     {
-        $availability = EmployeeAvailability::where('id', $id)
-            ->where('employee_id', Auth::id())
-            ->firstOrFail();
-
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'date' => 'required|date',
-            'preferred_time' => 'required|in:morning,evening,full_day,custom',
-            'start_time' => 'nullable|required_if:preferred_time,custom|date_format:H:i',
-            'end_time' => 'nullable|required_if:preferred_time,custom|date_format:H:i|after:start_time',
+            'preferred_time' => 'required|string',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i',
             'note' => 'nullable|string|max:255',
         ]);
 
-        $availability->update($validated);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ]);
+        }
 
-        return redirect()->route('availability.index')->with('success', 'Availability updated successfully!');
+        $availability = EmployeeAvailability::findOrFail($id);
+        $availability->date = $request->date;
+        $availability->preferred_time = $request->preferred_time;
+        $availability->start_time = $request->start_time;
+        $availability->end_time = $request->end_time;
+        $availability->note = $request->note;
+        $availability->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Availability updated successfully!'
+        ]);
     }
+
+
     // Delete availability
     public function destroy($id)
     {
