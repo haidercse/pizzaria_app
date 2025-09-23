@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('preferred_time'); // morning, evening, full_day
             $table->time('start_time')->nullable(); // custom 
             $table->time('end_time')->nullable();
+            $table->time('user_start_time')->nullable(); // custom 
+            $table->time('user_end_time')->nullable();
             $table->text('note')->nullable(); // optional note
             $table->timestamps();
 

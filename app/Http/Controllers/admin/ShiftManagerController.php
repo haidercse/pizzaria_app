@@ -1,0 +1,122 @@
+<?php
+
+namespace App\Http\Controllers\admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\EmployeeAvailability;
+use App\Models\ShiftAssignment;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class ShiftManagerController extends Controller
+{
+    public function index(Request $request)
+    {
+        $selectedMonth = $request->get('month', now()->format('Y-m'));
+        $selectedDate = $request->get('date', $selectedMonth . '-01');
+
+        // Users & total_hours load
+        $users = User::with(['availabilities' => function ($q) use ($selectedDate) {
+            $q->where('date', $selectedDate);
+        }])->get();
+
+        foreach ($users as $user) {
+            $user->total_hours = $this->calculateTotalHours($user->id, $selectedDate);
+        }
+
+        return view('backend.pages.shift.calendar', compact('users', 'selectedDate', 'selectedMonth'));
+    }
+
+    private function calculateTotalHours($employeeId, $selectedDate)
+    {
+        $total_hours = EmployeeAvailability::where('employee_id', $employeeId)
+            ->whereMonth('date', Carbon::parse($selectedDate)->month)
+            ->whereYear('date', Carbon::parse($selectedDate)->year)
+            ->select(DB::raw('SUM(hours) as total'))
+            ->first()
+            ->total;
+
+        // শুধু DB থেকে sum of saved hours
+        return $total_hours ?? 0;
+    }
+
+
+
+    public function save(Request $request)
+    {
+        $employeeId = $request->input('employee_id');
+        $date = $request->input('date');
+        $startTime = $request->input('start_time');
+        $endTime = $request->input('end_time');
+        $hours = $request->input('hours', 0);
+        $preferredTime = $request->input('preferred_time', 'Any');
+        // Save or update
+        $availability = EmployeeAvailability::updateOrCreate(
+            [
+                'employee_id' => $employeeId,
+                'date' => $date,  // ensure this is the date user selected
+            ],
+            [
+                'start_time' => $startTime,
+                'end_time' => $endTime,
+                'preferred_time' => $preferredTime,
+                'hours' => $hours,
+            ]
+        );
+
+
+        // Recalculate total hours
+        $totalHours = $this->calculateTotalHours($employeeId, $date);
+
+        return response()->json([
+            'message' => 'Shift saved successfully!',
+            'hours' => $hours,
+            'total_hours' => $totalHours,
+            'start_time' => $availability->start_time,
+            'end_time' => $availability->end_time,
+            'user_start_time' => $availability->user_start_time,
+            'user_end_time' => $availability->user_end_time,
+            'success' => true
+        ]);
+    }
+
+    public function view($employeeId)
+    {
+        $shifts = ShiftAssignment::where('employee_id', $employeeId)->get();
+
+        $lastMonthStart = now()->subMonth()->startOfMonth();
+        $lastMonthEnd = now()->subMonth()->endOfMonth();
+
+        $lastMonthHours = ShiftAssignment::where('employee_id', $employeeId)
+            ->whereBetween('date', [$lastMonthStart, $lastMonthEnd])
+            ->get()
+            ->sum(function ($shift) {
+                $start = Carbon::parse($shift->start_time);
+                $end = Carbon::parse($shift->end_time);
+                if ($end->lessThan($start)) {
+                    $end->addDay();
+                }
+                return $end->floatDiffInHours($start);
+            });
+
+        $isFullTime = $lastMonthHours >= 160 ? 'Full Time' : 'Part Time';
+        $note = EmployeeAvailability::where('employee_id', $employeeId)->latest()->value('note') ?? 'No note available';
+
+        return view('backend.pages.shift.history', compact('shifts', 'isFullTime', 'lastMonthHours', 'note'));
+    }
+
+
+    public function ajaxLoad($date)
+    {
+        $users = User::all();
+        $selectedDate = $date;
+
+        foreach ($users as $user) {
+            $user->total_hours = $this->calculateTotalHours($user->id, $selectedDate);
+        }
+
+        return view('backend.pages.shift.partials.shift-table', compact('users', 'selectedDate'));
+    }
+}

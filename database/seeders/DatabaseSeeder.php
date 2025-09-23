@@ -21,5 +21,6 @@ class DatabaseSeeder extends Seeder
         ]);
         $this->call(DoughListSeeder::class);
         $this->call(TaskSeeder::class);
+        $this->call(EmployeeAvailabilitySeeder::class);
     }
 }

@@ -53,6 +53,8 @@ class EmployeeAvailabilityController extends Controller
                 'preferred_time' => $request->preferred_time[$i],
                 'start_time'    => $request->start_time[$i] ?? null,
                 'end_time'      => $request->end_time[$i] ?? null,
+                'user_start_time' => $request->start_time[$i] ?? null,
+                'user_end_time'   => $request->end_time[$i] ?? null,
                 'note'          => $request->note[$i] ?? null,
             ]);
         }
@@ -94,7 +96,9 @@ class EmployeeAvailabilityController extends Controller
         $availability->date = $request->date;
         $availability->preferred_time = $request->preferred_time;
         $availability->start_time = $request->start_time;
+        $availability->user_start_time = $request->start_time;
         $availability->end_time = $request->end_time;
+        $availability->user_end_time = $request->end_time;
         $availability->note = $request->note;
         $availability->save();
 
@@ -115,5 +119,14 @@ class EmployeeAvailabilityController extends Controller
         $availability->delete();
 
         return redirect()->route('availability.index')->with('success', 'Availability deleted successfully!');
+    }
+
+    public function history($id)
+    {
+        $history = EmployeeAvailability::where('employee_id', $id)
+            ->whereMonth('date', now()->subMonth()->month)
+            ->get();
+
+        return view('backend.pages.shift.history', compact('history'));
     }
 }

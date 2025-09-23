@@ -4,6 +4,7 @@ use App\Http\Controllers\admin\AdminController;
 use App\Http\Controllers\admin\AuthController;
 use App\Http\Controllers\admin\DoughController;
 use App\Http\Controllers\admin\EmployeeAvailabilityController;
+use App\Http\Controllers\admin\ShiftManagerController;
 use App\Http\Controllers\admin\TaskController;
 use App\Http\Controllers\admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -76,6 +77,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/availability/{id}/edit', [EmployeeAvailabilityController::class, 'edit'])->name('availability.edit');
     Route::put('/availability/{id}', [EmployeeAvailabilityController::class, 'update'])->name('availability.update');
     Route::delete('/availability/{id}', [EmployeeAvailabilityController::class, 'destroy'])->name('availability.destroy');
+
+    // Shift Manager Routes
+
+    Route::get('/manager', [ShiftManagerController::class, 'index'])->name('shift-manager.index');
+    Route::get('/shift-manager/ajax/{date}', [ShiftManagerController::class, 'ajaxLoad'])->name('shift-manager.ajax');
+    Route::post('/shift/save', [ShiftManagerController::class, 'save'])->name('shift.save');
+    Route::get('/shift/view/{employee}', [ShiftManagerController::class, 'view'])->name('shift.view');
+
+
+    Route::get('/availability/history/{id}', [EmployeeAvailabilityController::class, 'history'])
+        ->name('shift.history');
 
     // Logout Route
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');

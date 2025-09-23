@@ -98,12 +98,25 @@
                     <li
                         class="{{ request()->routeIs('availability.index') || request()->routeIs('availability.create') ? 'active' : '' }}">
                         <a href="javascript:void(0)" aria-expanded="true">
-                            <span>Shift</span></a>
+                            <span>Employee Shift setup</span></a>
                         <ul class="collapse">
                             <li class="{{ request()->routeIs('availability.index') ? 'active' : '' }}"><a
                                     href="{{ route('availability.index') }}">Shift Availability</a></li>
                             <li class="{{ request()->routeIs('availability.create') ? 'active' : '' }}"><a
                                     href="{{ route('availability.create') }}">Set Shift Availability</a></li>
+
+                        </ul>
+                    </li>
+                    <li
+                        class="{{ request()->routeIs('shift-manager.index')  ? 'active' : '' }}">
+                        <a href="javascript:void(0)" aria-expanded="true">
+                            <span>Shift Management</span></a>
+                        <ul class="collapse">
+                            <li class="{{ request()->routeIs('shift-manager.index') ? 'active' : '' }}"><a
+                                    href="{{ route('shift-manager.index') }}">Shift Assignment</a></li>
+                            
+                            
+
                         </ul>
                     </li>
                     <li class="{{ request()->routeIs('profile') ? 'active' : '' }}">
@@ -133,13 +146,15 @@
                             <li class="{{ request()->routeIs('tasks.daily') ? 'active' : '' }}"><a
                                     href="{{ route('tasks.daily') }}"> Daily Task Show and Edit </a></li>
                             <li class="{{ request()->routeIs('tasks.checklist') ? 'active' : '' }}"><a
-                                    href="{{ route('tasks.checklist') }}"> Daily Task checklist for full month </a></li>
+                                    href="{{ route('tasks.checklist') }}"> Daily Task checklist for full month </a>
+                            </li>
                             <li class="{{ request()->routeIs('user.tasks.checklist') ? 'active' : '' }}"><a
-                                    href="{{ route('user.tasks.checklist') }}"> Daily Task checklist for Employee </a></li>
+                                    href="{{ route('user.tasks.checklist') }}"> Daily Task checklist for Employee </a>
+                            </li>
                         </ul>
                     </li>
 
-                    
+
 
 
                     <li>
