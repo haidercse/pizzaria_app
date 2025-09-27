@@ -8,6 +8,7 @@
             <th>Assigned Time (Start to End)</th>
             <th>Hours</th>
             <th>Total Hours</th>
+            <th>Place</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -63,7 +64,13 @@
                 </td>
                 <td class="hours">0</td>
                 <td class="total_hours">{{ $emp->total_hours }}</td>
-
+<td>
+                            <select name="place" class="form-select place" required>
+                                <option value="nusle" {{ $availability?->place == 'nusle' ? 'selected' : '' }}>Nusle</option>
+                                <option value="andel" {{ $availability?->place == 'andel' ? 'selected' : '' }}>Andel</option>
+                                <option value="event" {{ $availability?->place == 'event' ? 'selected' : '' }}>Event</option>
+                            </select>
+                        </td>
                 <td>
                     <button class="btn btn-sm btn-success save-shift" data-id="{{ $emp->id }}">Save</button>
                     <button class="btn btn-sm btn-info view-shift" data-id="{{ $emp->id }}"

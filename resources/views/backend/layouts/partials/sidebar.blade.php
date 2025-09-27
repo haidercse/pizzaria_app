@@ -96,7 +96,7 @@
                         </ul>
                     </li>
                     <li
-                        class="{{ request()->routeIs('availability.index') || request()->routeIs('availability.create') ? 'active' : '' }}">
+                        class="{{ request()->routeIs('availability.index') || request()->routeIs('availability.create') || request()->routeIs('shift.employee') ? 'active' : '' }}">
                         <a href="javascript:void(0)" aria-expanded="true">
                             <span>Employee Shift setup</span></a>
                         <ul class="collapse">
@@ -104,16 +104,20 @@
                                     href="{{ route('availability.index') }}">Shift Availability</a></li>
                             <li class="{{ request()->routeIs('availability.create') ? 'active' : '' }}"><a
                                     href="{{ route('availability.create') }}">Set Shift Availability</a></li>
+                            <li class="{{ request()->routeIs('shift.employee') ? 'active' : '' }}"><a
+                                    href="{{ route('shift.employee') }}">My Shifts</a></li>
 
                         </ul>
                     </li>
                     <li
-                        class="{{ request()->routeIs('shift-manager.index')  ? 'active' : '' }}">
+                        class="{{ request()->routeIs('shift-manager.index') || request()->routeIs('shift.show') ? 'active' : '' }}">
                         <a href="javascript:void(0)" aria-expanded="true">
                             <span>Shift Management</span></a>
                         <ul class="collapse">
                             <li class="{{ request()->routeIs('shift-manager.index') ? 'active' : '' }}"><a
                                     href="{{ route('shift-manager.index') }}">Shift Assignment</a></li>
+                            <li class="{{ request()->routeIs('shift.show') ? 'active' : '' }}"><a
+                                    href="{{ route('shift.show') }}">Shift Overview</a></li>
                             
                             
 

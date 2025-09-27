@@ -38,6 +38,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(ShiftAssignment::class, 'employee_id', 'id');
     }
+    public function contracts()
+    {
+        return $this->hasMany(Contract::class);
+    }
 
     
 }

@@ -14,13 +14,17 @@ class ShiftManagerController extends Controller
 {
     public function index(Request $request)
     {
+
         $selectedMonth = $request->get('month', now()->format('Y-m'));
         $selectedDate = $request->get('date', $selectedMonth . '-01');
 
         // Users & total_hours load
         $users = User::with(['availabilities' => function ($q) use ($selectedDate) {
             $q->where('date', $selectedDate);
-        }])->get();
+        }])
+            ->where('status', 1)
+            ->orderBy('name', 'asc')
+            ->get();
 
         foreach ($users as $user) {
             $user->total_hours = $this->calculateTotalHours($user->id, $selectedDate);
@@ -52,6 +56,13 @@ class ShiftManagerController extends Controller
         $endTime = $request->input('end_time');
         $hours = $request->input('hours', 0);
         $preferredTime = $request->input('preferred_time', 'Any');
+        $place = $request->input('place', null);
+        $selectedMonth = $request->selected_month; // ✅ YYYY-MM ফরম্যাটে
+
+        // year & month বের করা
+        $year = Carbon::createFromFormat('Y-m', $selectedMonth)->year;
+        $month = Carbon::createFromFormat('Y-m', $selectedMonth)->month;
+
         // Save or update
         $availability = EmployeeAvailability::updateOrCreate(
             [
@@ -63,6 +74,9 @@ class ShiftManagerController extends Controller
                 'end_time' => $endTime,
                 'preferred_time' => $preferredTime,
                 'hours' => $hours,
+                'place' => $place,
+                'year' => $year,
+                'month' => $month,
             ]
         );
 
@@ -78,6 +92,9 @@ class ShiftManagerController extends Controller
             'end_time' => $availability->end_time,
             'user_start_time' => $availability->user_start_time,
             'user_end_time' => $availability->user_end_time,
+            'place' => $availability->place,
+            'year' => $year,
+            'month' => $month,
             'success' => true
         ]);
     }
@@ -118,5 +135,75 @@ class ShiftManagerController extends Controller
         }
 
         return view('backend.pages.shift.partials.shift-table', compact('users', 'selectedDate'));
+    }
+
+    // use উপরে আছে: use Carbon\Carbon; use App\Models\User;
+
+    public function shiftShow(Request $request)
+    {
+        $selectedMonth = $request->get('month', now()->format('Y-m'));
+        $startOfMonth = \Carbon\Carbon::parse($selectedMonth . '-01');
+        $daysInMonth = $startOfMonth->daysInMonth;
+
+        $users = \App\Models\User::with(['availabilities' => function ($q) use ($startOfMonth) {
+            $q->whereYear('date', $startOfMonth->year)
+                ->whereMonth('date', $startOfMonth->month);
+        }])->get();
+
+        // Daily totals
+        $dailyTotals = [];
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $date = $startOfMonth->copy()->day($d)->toDateString();
+            $dailyTotals[$d] = round(\App\Models\EmployeeAvailability::where('date', $date)->sum('hours'), 2);
+        }
+
+        // Total hours
+        $totalHoursAllUsers = $users->sum(function ($user) {
+            return $user->availabilities->sum('hours');
+        });
+
+        $compact = compact('users', 'selectedMonth', 'startOfMonth', 'daysInMonth', 'dailyTotals', 'totalHoursAllUsers');
+
+        if ($request->ajax()) {
+            return view('backend.pages.shift.partials.shift_over_view_table', $compact)->render();
+        }
+
+        return view('backend.pages.shift.shift_show', $compact);
+    }
+
+    public function employeeShifts(Request $request)
+    {
+        $startDate = $request->get('start_date', now()->startOfMonth()->toDateString());
+        $endDate = \Carbon\Carbon::parse($startDate)->addDays(6)->toDateString();
+
+        $shifts = EmployeeAvailability::with('employee')
+            ->whereBetween('date', [$startDate, $endDate])
+            ->orderBy('date')
+            ->get()
+            ->groupBy('date');
+
+        // সাপ্তাহিক মোট ঘন্টা
+        $weeklyTotal = $shifts->flatten()->sum('hours');
+        // সব মাসের জন্য সপ্তাহ ভাগ করা
+        $monthStart = \Carbon\Carbon::parse(now()->startOfMonth());
+        $weeks = [];
+        for ($i = 0; $i < 4; $i++) {
+            $weekStart = $monthStart->copy()->addDays($i * 7);
+            $weekEnd = $weekStart->copy()->addDays(6);
+            $weeks[] = [
+                'start' => $weekStart->toDateString(),
+                'end'   => $weekEnd->toDateString(),
+                'label' => $weekStart->format('d M') . ' - ' . $weekEnd->format('d M'),
+            ];
+        }
+        // মাসিক মোট ঘন্টা
+        $monthEnd = $monthStart->copy()->endOfMonth();
+        $monthlyTotal = EmployeeAvailability::whereBetween('date', [$monthStart, $monthEnd])->sum('hours');
+
+        if ($request->ajax()) {
+            return view('backend.pages.shift.partials.my_shift_table', compact('shifts', 'startDate', 'endDate', 'weeklyTotal', 'monthlyTotal'))->render();
+        }
+
+        return view('backend.pages.shift.my_shift', compact('shifts', 'startDate', 'endDate', 'weeks', 'weeklyTotal', 'monthlyTotal'));
     }
 }

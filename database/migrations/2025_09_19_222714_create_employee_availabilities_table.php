@@ -21,6 +21,9 @@ return new class extends Migration
             $table->time('user_start_time')->nullable(); // custom 
             $table->time('user_end_time')->nullable();
             $table->text('note')->nullable(); // optional note
+            $table->text('place')->nullable(); // nusle, andel, event
+            $table->year('year')->nullable(); // for filtering
+            $table->tinyInteger('month')->nullable(); // for filtering
             $table->timestamps();
 
             $table->foreign('employee_id')->references('id')->on('users')->onDelete('cascade');

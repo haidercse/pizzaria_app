@@ -84,8 +84,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/shift-manager/ajax/{date}', [ShiftManagerController::class, 'ajaxLoad'])->name('shift-manager.ajax');
     Route::post('/shift/save', [ShiftManagerController::class, 'save'])->name('shift.save');
     Route::get('/shift/view/{employee}', [ShiftManagerController::class, 'view'])->name('shift.view');
-
-
+    Route::get('/shift/show', [ShiftManagerController::class, 'shiftShow'])->name('shift.show');
+    Route::get('/shift/employee', [ShiftManagerController::class, 'employeeShifts'])->name('shift.employee');
     Route::get('/availability/history/{id}', [EmployeeAvailabilityController::class, 'history'])
         ->name('shift.history');
 

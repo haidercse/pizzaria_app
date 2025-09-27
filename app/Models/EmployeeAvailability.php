@@ -20,6 +20,9 @@ class EmployeeAvailability extends Model
         'user_end_time',
         'note',
         'hours',
+        'month',
+        'year',
+        'place',
     ];
 
     public function getCalculatedHoursAttribute()

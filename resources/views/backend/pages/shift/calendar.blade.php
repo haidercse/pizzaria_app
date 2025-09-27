@@ -1,13 +1,16 @@
 @extends('backend.layouts.master')
 
 @section('admin-content')
+
     <div class="container">
         <h3 class="mb-4">Shift Manager</h3>
         <div class="mb-3">
             <label for="monthFilter">Select Month:</label>
             <input type="month" id="monthFilter" class="form-control" value="{{ $selectedMonth }}">
+            <input type="hidden" id="selectedMonth" value="{{ $selectedMonth }}">
         </div>
         @php
+
             $startOfMonth = \Carbon\Carbon::parse($selectedMonth . '-01');
             $daysInMonth = $startOfMonth->daysInMonth;
         @endphp
@@ -42,6 +45,7 @@
                     <th>Employee Assigned Time</th>
                     <th>Hours</th>
                     <th>Total Hours</th>
+                    <th>Place</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -95,7 +99,17 @@
                         </td>
                         <td class="hours">{{ $availability?->hours ?? 0 }}</td>
                         <td class="total-hours">{{ $emp->total_hours ?? 0 }}</td>
+                        <td>
+                            <select name="place" class="form-select place" required>
 
+                                <option value="nusle" {{ $availability?->place == 'nusle' ? 'selected' : '' }}>Nusle
+                                </option>
+                                <option value="andel" {{ $availability?->place == 'andel' ? 'selected' : '' }}>Andel
+                                </option>
+                                <option value="event" {{ $availability?->place == 'event' ? 'selected' : '' }}>Event
+                                </option>
+                            </select>
+                        </td>
                         <td>
                             <button class="btn btn-sm btn-success save-shift" data-id="{{ $emp->id }}">Save</button>
                             <button class="btn btn-sm btn-info view-shift" data-id="{{ $emp->id }}"
@@ -221,6 +235,8 @@
                 let preferred = row.find('td:nth-child(2)').text();
                 let hours = row.find('.hours').text();
                 let date = row.closest('table').data('date');
+                let place = row.find('.place').val();
+                let month = $('#selectedMonth').val();
                 $.ajax({
                     url: "{{ route('shift.save') }}",
                     method: "POST",
@@ -232,6 +248,8 @@
                         preferred_time: preferred,
                         hours: hours,
                         date: date,
+                        place: place,
+                        selected_month: month
                     },
                     success: function(res) {
                         if (res.success) {
@@ -243,6 +261,7 @@
                             // ✅ Select option ke selected kore dao
                             row.find('.start-time').val(res.start_time);
                             row.find('.end-time').val(res.end_time);
+                            row.find('.place').val(res.place);
 
                             alert(res.message);
                         } else {
@@ -291,3 +310,6 @@
         });
     </script>
 @endpush
+
+
+
