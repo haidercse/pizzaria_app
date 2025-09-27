@@ -85,7 +85,7 @@
                     </li> --}}
 
                     <li
-                        class="{{ request()->routeIs('users.create') || request()->routeIs('users.index') ? 'active' : '' }}">
+                        class="{{ request()->routeIs('users.create') || request()->routeIs('users.index') || request()->routeIs('day_tasks.index') ? 'active' : '' }}">
                         <a href="javascript:void(0)" aria-expanded="true">
                             <span>Settings</span></a>
                         <ul class="collapse">
@@ -93,6 +93,8 @@
                                     href="{{ route('users.create') }}">Employee Registration</a></li>
                             <li class="{{ request()->routeIs('users.index') ? 'active' : '' }}"><a
                                     href="{{ route('users.index') }}">Employee List</a></li>
+                            <li class="{{ request()->routeIs('day_tasks.index') ? 'active' : '' }}"><a
+                                    href="{{ route('day_tasks.index') }}">Day Tasks</a></li>
                         </ul>
                     </li>
                     <li

@@ -176,7 +176,7 @@ class ShiftManagerController extends Controller
         $startDate = $request->get('start_date', now()->startOfMonth()->toDateString());
         $endDate = \Carbon\Carbon::parse($startDate)->addDays(6)->toDateString();
 
-        $shifts = EmployeeAvailability::with('employee')
+        $shifts = EmployeeAvailability::with(['employee', 'dayTask'])
             ->whereBetween('date', [$startDate, $endDate])
             ->orderBy('date')
             ->get()

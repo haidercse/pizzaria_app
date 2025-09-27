@@ -1,24 +1,11 @@
-@php
-    $badgeColors = [
-        'andel' => 'bg-warning text-dark',
-        'nusle' => 'bg-success',
-        'event' => 'bg-info text-dark',
-    ];
-@endphp
-
-{{-- Monthly total --}}
-<p class="text-muted">
-    Monthly Total Hour:
-    <span class="badge bg-warning">{{ $monthlyTotal ?? 0 }}</span>
-</p>
-
 <table class="table table-bordered table-striped align-middle text-center">
     <thead class="table-primary">
         <tr>
-            <th style="width: 20%;">Date</th>
-            <th style="width: 20%;">Time</th>
-            <th style="width: 20%;">Place</th>
-            <th style="width: 40%;">With Whom</th>
+            <th style="width: 15%;">Date</th>
+            <th style="width: 15%;">Time</th>
+            <th style="width: 15%;">Place</th>
+            <th style="width: 25%;">With Whom</th>
+            <th style="width: 30%;">Day Task</th>
         </tr>
     </thead>
     <tbody>
@@ -41,7 +28,7 @@
                         <small class="text-muted">({{ $shift->hours ?? 0 }}h)</small>
                     </td>
 
-                    {{-- Place with Badge --}}
+                    {{-- Place --}}
                     <td>
                         @php
                             $color = $badgeColors[$shift->place] ?? 'bg-secondary';
@@ -52,14 +39,26 @@
                     </td>
 
                     {{-- With Whom --}}
+                    <td>{{ $shift->employee->name }}</td>
+
+                    {{-- Day Task --}}
                     <td>
-                        {{ $shift->employee->name }}
+                        @php
+                        if ($shift->dayTask) {
+                            $taskName = $shift->dayTask->task_name;
+                            $taskColor = 'badge bg-warning';
+                        } else {
+                            $taskName = 'No Task Assigned';
+                            $taskColor = '';
+                        }
+                        @endphp
+                       <span class="{{ $taskColor }} p-2">{{ $taskName }}</span>
                     </td>
                 </tr>
             @endforeach
         @empty
             <tr>
-                <td colspan="4" class="text-muted text-center">
+                <td colspan="5" class="text-muted text-center">
                     No shifts available for this week.
                 </td>
             </tr>
@@ -67,7 +66,7 @@
 
         {{-- Weekly Total --}}
         <tr>
-            <td colspan="4" class="text-muted text-center fw-bold">
+            <td colspan="5" class="text-muted text-center fw-bold">
                 Weekly Total Hour: {{ $weeklyTotal ?? 0 }} hours
             </td>
         </tr>

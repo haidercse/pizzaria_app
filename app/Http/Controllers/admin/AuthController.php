@@ -23,15 +23,18 @@ class AuthController extends Controller
 
         // Perform login logic here
         $remember = $request->filled('remember');
-        if (auth()->attempt($request->only('email', 'password'), $remember)) {
+        if (Auth::attempt($request->only('email', 'password'), $remember)) {
+            $request->session()->regenerate();
             return redirect()->route('admin.dashboard');
         }
 
         return redirect()->back()->withErrors(['Invalid credentials']);
     }
-    public function logout()
+    public function logout(Request $request)
     {
-        auth()->logout();
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect()->route('login');
     }
 
@@ -101,4 +104,6 @@ class AuthController extends Controller
         // If no new file is uploaded, return the existing path
         return $currentImagePath;
     }
+    // remember
+
 }

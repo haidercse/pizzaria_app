@@ -37,9 +37,17 @@ class EmployeeAvailability extends Model
         }
         return 0;
     }
+    public function getDayOfWeekAttribute()
+    {
+        return \Carbon\Carbon::parse($this->date)->format('l'); // e.g. Monday
+    }
 
     public function employee()
     {
         return $this->belongsTo(User::class, 'employee_id');
+    }
+    public function dayTask()
+    {
+        return $this->hasOne(DayTask::class, 'day_of_week', 'day_of_week');
     }
 }

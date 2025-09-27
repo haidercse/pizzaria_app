@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\admin\AdminController;
 use App\Http\Controllers\admin\AuthController;
+use App\Http\Controllers\admin\DayTaskController;
 use App\Http\Controllers\admin\DoughController;
 use App\Http\Controllers\admin\EmployeeAvailabilityController;
 use App\Http\Controllers\admin\ShiftManagerController;
@@ -88,6 +89,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/shift/employee', [ShiftManagerController::class, 'employeeShifts'])->name('shift.employee');
     Route::get('/availability/history/{id}', [EmployeeAvailabilityController::class, 'history'])
         ->name('shift.history');
+
+
+    // DayTask Routes
+    Route::resource('day_tasks', DayTaskController::class);
 
     // Logout Route
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');

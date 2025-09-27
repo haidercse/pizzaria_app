@@ -1,5 +1,5 @@
 @extends('backend.layouts.master')
-
+@section('title', 'My Shifts')
 @section('admin-content')
 <div class="container">
     <h3 class="mb-3 text-center">Employee Shift Schedule</h3>
