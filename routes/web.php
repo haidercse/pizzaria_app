@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\admin\AdminController;
 use App\Http\Controllers\admin\AuthController;
+use App\Http\Controllers\admin\CheckoutController;
 use App\Http\Controllers\admin\DayTaskController;
 use App\Http\Controllers\admin\DoughController;
 use App\Http\Controllers\admin\EmployeeAvailabilityController;
@@ -89,10 +90,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/shift/employee', [ShiftManagerController::class, 'employeeShifts'])->name('shift.employee');
     Route::get('/availability/history/{id}', [EmployeeAvailabilityController::class, 'history'])
         ->name('shift.history');
-
-
+    Route::get('/shift/all_shifts', [ShiftManagerController::class, 'allShifts'])->name('all.shifts');
     // DayTask Routes
     Route::resource('day_tasks', DayTaskController::class);
+
+
+    // Checkout Routes
+    // Checkout Routes
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::get('/checkout/create', [CheckoutController::class, 'create'])->name('checkout.create');
+    Route::post('/checkout/store', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::post('/checkout/update/{id}', [CheckoutController::class, 'update'])->name('checkout.update');
 
     // Logout Route
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');

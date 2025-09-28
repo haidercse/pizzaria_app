@@ -206,4 +206,58 @@ class ShiftManagerController extends Controller
 
         return view('backend.pages.shift.my_shift', compact('shifts', 'startDate', 'endDate', 'weeks', 'weeklyTotal', 'monthlyTotal'));
     }
+
+    public function allShifts(Request $request)
+    {
+        $startDate = $request->get('start_date', now()->startOfMonth()->toDateString());
+        $endDate   = \Carbon\Carbon::parse($startDate)->addDays(6)->toDateString();
+
+        $placeFilter = $request->get('place'); // filter by place
+
+        $query = EmployeeAvailability::with(['employee', 'dayTask'])
+            ->whereBetween('date', [$startDate, $endDate])
+            ->orderBy('date');
+
+        if ($placeFilter) {
+            $query->where('place', $placeFilter);
+        }
+
+        $shifts = $query->get()->groupBy('date');
+
+        $weeklyTotal = $shifts->flatten()->sum('hours');
+
+        $monthStart = \Carbon\Carbon::parse(now()->startOfMonth());
+        $weeks = [];
+        for ($i = 0; $i < 4; $i++) {
+            $weekStart = $monthStart->copy()->addDays($i * 7);
+            $weekEnd   = $weekStart->copy()->addDays(6);
+            $weeks[] = [
+                'start' => $weekStart->toDateString(),
+                'end'   => $weekEnd->toDateString(),
+                'label' => $weekStart->format('d M') . ' - ' . $weekEnd->format('d M'),
+            ];
+        }
+
+        $monthEnd = $monthStart->copy()->endOfMonth();
+        $monthlyTotal = EmployeeAvailability::whereBetween('date', [$monthStart, $monthEnd])->sum('hours');
+
+        if ($request->ajax()) {
+            return view('backend.pages.shift.partials.all_shift_table', compact(
+                'shifts',
+                'startDate',
+                'endDate',
+                'weeklyTotal',
+                'monthlyTotal'
+            ))->render();
+        }
+
+        return view('backend.pages.shift.all_shift', compact(
+            'shifts',
+            'startDate',
+            'endDate',
+            'weeks',
+            'weeklyTotal',
+            'monthlyTotal'
+        ));
+    }
 }

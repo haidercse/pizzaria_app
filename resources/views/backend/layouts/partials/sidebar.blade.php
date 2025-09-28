@@ -98,7 +98,7 @@
                         </ul>
                     </li>
                     <li
-                        class="{{ request()->routeIs('availability.index') || request()->routeIs('availability.create') || request()->routeIs('shift.employee') ? 'active' : '' }}">
+                        class="{{ request()->routeIs('availability.index') || request()->routeIs('availability.create') || request()->routeIs('shift.employee') || request()->routeIs('all.shifts') || request()->routeIs('checkout.create') | request()->routeIs('checkout.index') ? 'active' : '' }}">
                         <a href="javascript:void(0)" aria-expanded="true">
                             <span>Employee Shift setup</span></a>
                         <ul class="collapse">
@@ -108,6 +108,12 @@
                                     href="{{ route('availability.create') }}">Set Shift Availability</a></li>
                             <li class="{{ request()->routeIs('shift.employee') ? 'active' : '' }}"><a
                                     href="{{ route('shift.employee') }}">My Shifts</a></li>
+                            <li class="{{ request()->routeIs('all.shifts') ? 'active' : '' }}"><a
+                                    href="{{ route('all.shifts') }}">All Shifts</a></li>
+                            <li class="{{ request()->routeIs('checkout.create') ? 'active' : '' }}"><a
+                                    href="{{ route('checkout.create') }}">Submit your shift today</a></li>
+                            <li class="{{ request()->routeIs('checkout.index') ? 'active' : '' }}"><a
+                                    href="{{ route('checkout.index') }}">All Checkouts</a></li>
 
                         </ul>
                     </li>
