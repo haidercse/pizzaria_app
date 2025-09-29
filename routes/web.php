@@ -6,6 +6,8 @@ use App\Http\Controllers\admin\CheckoutController;
 use App\Http\Controllers\admin\DayTaskController;
 use App\Http\Controllers\admin\DoughController;
 use App\Http\Controllers\admin\EmployeeAvailabilityController;
+use App\Http\Controllers\admin\HolidayController;
+use App\Http\Controllers\admin\PrepsController;
 use App\Http\Controllers\admin\ShiftManagerController;
 use App\Http\Controllers\admin\TaskController;
 use App\Http\Controllers\admin\UserController;
@@ -101,6 +103,38 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout/create', [CheckoutController::class, 'create'])->name('checkout.create');
     Route::post('/checkout/store', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::post('/checkout/update/{id}', [CheckoutController::class, 'update'])->name('checkout.update');
+    Route::get('/checkout/monthly_overview', [CheckoutController::class, 'monthlyOverview'])->name('checkout.monthly_overview');
+
+
+    // Holiday Routes
+    Route::resource('holidays', HolidayController::class);
+
+    // Prep Routes
+    // Prep Routes
+    Route::prefix('preps')->group(function () {
+        // List আগে আসবে
+        Route::get('/list', [PrepsController::class, 'list'])->name('preps.list');
+
+        // Create page
+        Route::get('/create', [PrepsController::class, 'create'])->name('preps.create');
+
+        // Store new prep
+        Route::post('/', [PrepsController::class, 'store'])->name('preps.store');
+
+        // Edit page
+        Route::get('/{id}/edit', [PrepsController::class, 'edit'])->name('preps.edit');
+
+        // Update prep
+        Route::put('/{id}', [PrepsController::class, 'update'])->name('preps.update');
+
+        // Show single prep (/{id} should be last!)
+        Route::get('/{id}', [PrepsController::class, 'show'])->name('preps.show');
+
+        // Index page (optional, could be first or last)
+        Route::get('/', [PrepsController::class, 'index'])->name('preps.index');
+        Route::delete('/{id}', [PrepsController::class, 'destroy'])->name('preps.destroy');
+    });
+
 
     // Logout Route
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');

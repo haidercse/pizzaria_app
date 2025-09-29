@@ -42,6 +42,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Contract::class);
     }
-
-    
+    public function checkouts()
+    {
+        return $this->hasMany(\App\Models\EmployeeCheckout::class, 'employee_id');
+    }
+    public function contract()
+    {
+        return $this->hasOne(\App\Models\Contract::class);
+    }
 }

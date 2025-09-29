@@ -13,14 +13,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory(10)->create();
-        User::factory()->create([
-            'name' => 'Danniel',
-            'email' => 'super-admin@gmail.com',
-            'password' => bcrypt('12345678'),
+        $this->call([
+            DoughListSeeder::class,
+            TaskSeeder::class,
+            EmployeeAvailabilitySeeder::class,
+            EmployeeCheckoutSeeder::class,
+            PrepSeeder::class,
         ]);
-        $this->call(DoughListSeeder::class);
-        $this->call(TaskSeeder::class);
-        $this->call(EmployeeAvailabilitySeeder::class);
     }
 }
