@@ -135,6 +135,12 @@ return [
 
         ],
     ],
+
+    [
+        'title' => 'Dough Making Tables',
+        'route' => 'dough_making.yeast_salt_list',
+        'permission' => null,
+    ],
     [
         'title' => 'Logout',
         'route' => 'logout',

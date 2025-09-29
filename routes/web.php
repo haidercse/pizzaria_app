@@ -5,6 +5,7 @@ use App\Http\Controllers\admin\AuthController;
 use App\Http\Controllers\admin\CheckoutController;
 use App\Http\Controllers\admin\DayTaskController;
 use App\Http\Controllers\admin\DoughController;
+use App\Http\Controllers\admin\DoughMakingListController;
 use App\Http\Controllers\admin\EmployeeAvailabilityController;
 use App\Http\Controllers\admin\HolidayController;
 use App\Http\Controllers\admin\PrepsController;
@@ -136,6 +137,9 @@ Route::middleware('auth')->group(function () {
     });
 
 
+    // Dough Making List Routes
+    Route::get('/dough_making/yeast_salt_list', [DoughMakingListController::class, 'YeastSaltList'])->name('dough_making.yeast_salt_list');
+    Route::post('/phase-table/update-inline', [DoughMakingListController::class, 'updateInline'])->name('phase.update.inline');
     // Logout Route
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });

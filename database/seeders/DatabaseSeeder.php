@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             EmployeeAvailabilitySeeder::class,
             EmployeeCheckoutSeeder::class,
             PrepSeeder::class,
+            YeastSaltSeeder::class,
+            FlourDistributionSeeder::class,
         ]);
     }
 }
