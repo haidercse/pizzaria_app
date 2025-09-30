@@ -55,13 +55,12 @@
                             href="{{ route('admin.dashboard') }}" aria-expanded="true"><span>Dashboard</span></a></li>
 
                     <li
-                        class="{{ request()->routeIs('dough.index') || request()->routeIs('dough.create') || request()->routeIs('dough.edit') ? 'active' : '' }}">
+                        class="{{ request()->routeIs('dough.index')  || request()->routeIs('dough.edit') ? 'active' : '' }}">
                         <a href="javascript:void(0)" aria-expanded="true"><span>Dough</span></a>
                         <ul class="collapse">
                             <li class="{{ request()->routeIs('dough.index') ? 'active' : '' }}"><a
                                     href="{{ route('dough.index') }}">Dough List</a></li>
-                            <li class="{{ request()->routeIs('dough.create') ? 'active' : '' }}"><a
-                                    href="{{ route('dough.create') }}">Add Dough Litter</a></li>
+                          
 
                         </ul>
                     </li>

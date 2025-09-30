@@ -16,11 +16,7 @@ return [
                 'route' => 'dough.index',
                 'permission' => 'manage-dough',
             ],
-            [
-                'title' => 'Add Dough Litter',
-                'route' => 'dough.create',
-                'permission' => 'manage-dough',
-            ],
+            
         ],
     ],
     [

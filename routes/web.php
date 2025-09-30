@@ -31,7 +31,10 @@ Route::middleware('auth')->group(function () {
     Route::get('admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 
     // Resource Routes
-    Route::resource('dough', DoughController::class);
+    Route::resource('dough', DoughController::class)->except(['create', 'edit', 'show']);
+    Route::get('dough/{id}/get', [DoughController::class, 'getDough'])->name('dough.get');
+
+
     Route::resource('users', UserController::class);
     Route::get('users/restore-password/{id}', [UserController::class, 'restorePassword'])->name('users.restore.password');
 
