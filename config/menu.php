@@ -16,22 +16,18 @@ return [
                 'route' => 'dough.index',
                 'permission' => 'manage-dough',
             ],
-            
+
         ],
     ],
     [
         'title' => 'Settings',
         'permission' => 'manage-settings',
         'submenu' => [
-            [
-                'title' => 'Employee Registration',
-                'route' => 'users.create',
-                'permission' => 'manage-employees',
-            ],
+
             [
                 'title' => 'Employee List',
                 'route' => 'users.index',
-                'permission' => 'manage-employees',
+                'permission' => 'none',
             ],
             [
                 'title' => 'Day Tasks',

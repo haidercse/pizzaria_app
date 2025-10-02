@@ -108,4 +108,15 @@ class UserController extends Controller
             'message' => 'User deleted successfully!'
         ]);
     }
+    public function resetPassword($id)
+    {
+        $user = User::findOrFail($id);
+        $user->password = Hash::make('12345678');
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password reset successfully! Default password: 12345678'
+        ]);
+    }
 }

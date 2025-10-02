@@ -36,7 +36,7 @@ Route::middleware('auth')->group(function () {
 
 
     Route::resource('users', UserController::class);
-    Route::get('users/restore-password/{id}', [UserController::class, 'restorePassword'])->name('users.restore.password');
+   Route::post('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset.password');
 
     //profile route
     Route::get('profile', [AuthController::class, 'profile'])->name('profile');
