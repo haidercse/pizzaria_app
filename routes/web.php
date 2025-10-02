@@ -7,6 +7,7 @@ use App\Http\Controllers\admin\DayTaskController;
 use App\Http\Controllers\admin\DoughController;
 use App\Http\Controllers\admin\DoughMakingListController;
 use App\Http\Controllers\admin\EmployeeAvailabilityController;
+use App\Http\Controllers\admin\EventController;
 use App\Http\Controllers\admin\HolidayController;
 use App\Http\Controllers\admin\PrepsController;
 use App\Http\Controllers\admin\ShiftManagerController;
@@ -36,7 +37,7 @@ Route::middleware('auth')->group(function () {
 
 
     Route::resource('users', UserController::class);
-   Route::post('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset.password');
+    Route::post('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset.password');
 
     //profile route
     Route::get('profile', [AuthController::class, 'profile'])->name('profile');
@@ -114,26 +115,19 @@ Route::middleware('auth')->group(function () {
     Route::resource('holidays', HolidayController::class);
 
     // Prep Routes
-    // Prep Routes
     Route::prefix('preps')->group(function () {
-        // List আগে আসবে
+        // List 
         Route::get('/list', [PrepsController::class, 'list'])->name('preps.list');
-
         // Create page
         Route::get('/create', [PrepsController::class, 'create'])->name('preps.create');
-
         // Store new prep
         Route::post('/', [PrepsController::class, 'store'])->name('preps.store');
-
         // Edit page
         Route::get('/{id}/edit', [PrepsController::class, 'edit'])->name('preps.edit');
-
         // Update prep
         Route::put('/{id}', [PrepsController::class, 'update'])->name('preps.update');
-
         // Show single prep (/{id} should be last!)
         Route::get('/{id}', [PrepsController::class, 'show'])->name('preps.show');
-
         // Index page (optional, could be first or last)
         Route::get('/', [PrepsController::class, 'index'])->name('preps.index');
         Route::delete('/{id}', [PrepsController::class, 'destroy'])->name('preps.destroy');
@@ -143,6 +137,16 @@ Route::middleware('auth')->group(function () {
     // Dough Making List Routes
     Route::get('/dough_making/yeast_salt_list', [DoughMakingListController::class, 'YeastSaltList'])->name('dough_making.yeast_salt_list');
     Route::post('/phase-table/update-inline', [DoughMakingListController::class, 'updateInline'])->name('phase.update.inline');
+
+    //events route
+    Route::prefix('admin')->group(function () {
+        Route::get('/events', [EventController::class, 'index'])->name('events.index');
+        Route::post('/events', [EventController::class, 'store'])->name('events.store');
+        Route::put('/events/{id}', [EventController::class, 'update'])->name('events.update');
+        Route::delete('/events/{id}', [EventController::class, 'destroy'])->name('events.destroy');
+    });
+
+
     // Logout Route
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });

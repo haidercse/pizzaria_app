@@ -32,12 +32,17 @@ return [
             [
                 'title' => 'Day Tasks',
                 'route' => 'day_tasks.index',
-                'permission' => 'manage-tasks',
+                'permission' => 'none',
             ],
             [
                 'title' => 'Holiday',
                 'route' => 'holidays.index',
-                'permission' => 'manage-holidays',
+                'permission' => 'none',
+            ],
+            [
+                'title' => 'Event',
+                'route' => 'events.index',
+                'permission' => 'none',
             ],
         ],
     ],

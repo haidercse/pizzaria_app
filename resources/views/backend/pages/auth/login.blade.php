@@ -20,7 +20,7 @@
         <div class="container">
             @include('backend.layouts.partials.message')
             <div class="login-box ptb--100">
-                <form method="POST" action="{{ route('login.post') }}">
+                <form id="loginForm" method="POST" action="{{ route('login.post') }}">
                     @csrf
                     <div class="login-form-head">
                         <h4>Sign In</h4>
@@ -84,6 +84,7 @@
     <!-- jquery latest version -->
 
     @include('backend.layouts.partials.scripts')
+
 
 </body>
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\DoughList;
+use App\Models\Event;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -22,7 +23,7 @@ class AdminController extends Controller
         $weekDays = collect();
         $current = $startOfWeek->copy();
         while ($current->lte($endOfWeek)) {
-            
+
             $dayData = $doughs->firstWhere('day', $current->format('l'));
 
             $weekDays->push([
@@ -35,6 +36,8 @@ class AdminController extends Controller
             $current->addDay();
         }
 
-        return view('backend.pages.dashboard.index', compact('weekDays'));
+        $events = Event::orderBy('event_date', 'asc')->get(); // Collection thakbe
+
+        return view('backend.pages.dashboard.index', compact('weekDays', 'events'));
     }
 }

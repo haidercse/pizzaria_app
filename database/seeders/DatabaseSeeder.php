@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             PrepSeeder::class,
             YeastSaltSeeder::class,
             FlourDistributionSeeder::class,
+            EventSeeder::class,
         ]);
     }
 }
