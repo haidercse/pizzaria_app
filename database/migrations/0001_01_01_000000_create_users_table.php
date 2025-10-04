@@ -25,6 +25,7 @@ return new class extends Migration
 
             $table->string('password');
             $table->string('status')->default('1');
+             $table->tinyInteger('is_superadmin')->default(0);
             $table->rememberToken();
             $table->timestamps();
         });

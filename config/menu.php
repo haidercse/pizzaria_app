@@ -139,6 +139,23 @@ return [
         'permission' => null,
     ],
     [
+        'title' => 'Roles && Permission',
+        'permission' => 'none',
+        'submenu' => [
+            [
+                'title' => 'Roles',
+                'route' => 'roles.index',
+                'permission' => 'none',
+            ],
+            [
+                'title' => 'Permission',
+                'route' => 'permissions.index',
+                'permission' => 'none',
+            ],
+            
+        ],
+    ],
+    [
         'title' => 'Logout',
         'route' => 'logout',
         'permission' => null,

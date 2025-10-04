@@ -9,7 +9,9 @@ use App\Http\Controllers\admin\DoughMakingListController;
 use App\Http\Controllers\admin\EmployeeAvailabilityController;
 use App\Http\Controllers\admin\EventController;
 use App\Http\Controllers\admin\HolidayController;
+use App\Http\Controllers\admin\PermissionController;
 use App\Http\Controllers\admin\PrepsController;
+use App\Http\Controllers\admin\RolePermissionController;
 use App\Http\Controllers\admin\ShiftManagerController;
 use App\Http\Controllers\admin\TaskController;
 use App\Http\Controllers\admin\UserController;
@@ -146,6 +148,13 @@ Route::middleware('auth')->group(function () {
         Route::delete('/events/{id}', [EventController::class, 'destroy'])->name('events.destroy');
     });
 
+    //roles 
+    Route::resource('roles', RolePermissionController::class);
+    Route::prefix('admin')->group(function () {
+    Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
+    Route::post('permissions/store-or-update', [PermissionController::class, 'storeOrUpdate'])->name('permissions.storeOrUpdate');
+    Route::delete('permissions/{id}', [PermissionController::class, 'destroy'])->name('permissions.destroy');
+});
 
     // Logout Route
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
