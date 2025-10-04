@@ -3,6 +3,112 @@
 @section('title')
     Role | Role Management
 @endsection
+@push('styles')
+    <style>
+        /* Card */
+        .card {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Card Header */
+        /* .card-header {
+            background: linear-gradient(90deg, #4e73df, #1cc88a);
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.25rem;
+            border-top-left-radius: 1rem;
+            border-top-right-radius: 1rem;
+            padding: 1rem 1.5rem;
+        } */
+
+        /* Buttons */
+        .btn-info,
+        .btn-success,
+        .btn-danger {
+            border-radius: 0.6rem;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-info:hover {
+            background: #36b9cc;
+        }
+
+        .btn-success:hover {
+            background: #1cc88a;
+        }
+
+        .btn-danger:hover {
+            background: #e74a3b;
+        }
+
+        /* Table */
+        #data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.75rem;
+        }
+
+        #data-table th,
+        #data-table td {
+            border: none !important;
+            border-radius: 0.6rem;
+            background: #ffffff;
+            padding: 0.8rem 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            vertical-align: middle;
+        }
+
+        #data-table th {
+            background: #4e73df;
+            color: #fff;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        #data-table tr:hover td {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        /* Badges */
+        .badge-info {
+            background: linear-gradient(45deg, #36b9cc, #1cc88a);
+            color: #fff;
+            font-size: 0.8rem;
+            padding: 0.45em 0.8em;
+            border-radius: 0.5rem;
+            margin-right: 0.3rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .badge-info:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Modal */
+        .modal-content {
+            border-radius: 1rem;
+        }
+
+        .modal-header {
+            background: #4e73df;
+            color: #fff;
+            border-bottom: none;
+        }
+
+        .modal-body {
+            font-size: 0.95rem;
+        }
+    </style>
+@endpush
+
+
 
 @section('admin-content')
     <div class="container">
