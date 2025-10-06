@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\FlourDistribution;
 use App\Models\PhaseTable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class DoughMakingListController extends Controller
@@ -19,6 +20,10 @@ class DoughMakingListController extends Controller
     }
     public function updateInline(Request $request)
     {
+        $user = Auth::user();
+        if (!$user || !$user->hasPermissionTo('phase.update.inline')) {
+            return response()->json(['success' => false, 'message' => 'Invalid field'], 400);
+        }
         $phase = PhaseTable::findOrFail($request->id);
         $field = $request->field;
         $value = $request->value;

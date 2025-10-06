@@ -5,11 +5,25 @@
 @section('breadcrumb-home_route', route('users.index'))
 @section('breadcrumb-home_title', 'Users')
 @section('breadcrumb-current', 'List')
+@push('styles')
+    <style>
+        .btn-group .btn i {
+            transition: transform 0.2s ease;
+        }
+
+        .btn-group .btn:hover i {
+            transform: scale(1.2);
+        }
+    </style>
+@endpush
+@php
+    $authUser = Auth::user();
+@endphp
 
 @section('admin-content')
     <div class="main-content">
         <button class="btn btn-success ml-3" id="addUserBtn">+ Add User</button>
-        <div class="card shadow-sm">
+        <div class="card shadow-sm mt-3">
             <div class="card-body">
                 <table class="table table-bordered table-striped align-middle" id="userTable">
                     <thead class="table-light">
@@ -28,7 +42,7 @@
                     </thead>
                     <tbody>
                         @foreach ($users as $user)
-                            <tr data-id="{{ $user->id }}">
+                            <tr data-id="{{ $user->id }}" data-role-id="{{ $user->roles->first()->id ?? '' }}">
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->email }}</td>
                                 <td>{{ $user->phone }}</td>
@@ -71,11 +85,21 @@
                                         -
                                     @endif
                                 </td>
-                                <td>
-                                    <button class="btn btn-primary btn-sm editBtn">Edit</button>
-                                    <button class="btn btn-danger btn-sm deleteBtn">Delete</button>
-                                     <button class="btn btn-warning btn-sm resetBtn">Reset Password</button>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button class="btn btn-primary editBtn" data-toggle="tooltip" title="Edit">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-danger deleteBtn" data-toggle="tooltip" title="Delete">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                        <button class="btn btn-warning resetBtn" data-toggle="tooltip"
+                                            title="Reset Password">
+                                            <i class="fa fa-refresh"></i>
+                                        </button>
+                                    </div>
                                 </td>
+
                             </tr>
                         @endforeach
                     </tbody>
@@ -88,13 +112,13 @@
     <div class="modal fade" id="userModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content border-0 shadow-lg">
-                <form id="userForm" enctype="multipart/form-data">
+                <form id="userForm">
                     @csrf
                     <input type="hidden" id="user_id" name="user_id">
                     <div class="modal-header bg-success text-white">
                         <h5 class="modal-title">User Form</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
+
                     <div class="modal-body bg-light">
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -118,6 +142,24 @@
                                     <option value="part_time">Part Time</option>
                                 </select>
                             </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Role Assign</label>
+                                <select name="role" id="role" class="form-control border-success">
+                                    <option value="">-- Select Role --</option>
+                                    @php
+                                        $roles = \Spatie\Permission\Models\Role::where(
+                                            'name',
+                                            '!=',
+                                            'super admin',
+                                        )->get();
+                                    @endphp
+                                    @foreach ($roles as $role)
+                                        <option value="{{ $role->id }}">{{ ucfirst($role->name) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Salary</label>
                                 <input type="number" step="0.01" class="form-control border-success" name="salary"
@@ -125,6 +167,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="modal-footer">
                         <button type="submit" id="saveBtn" class="btn btn-success">Save</button>
                     </div>
@@ -149,173 +192,83 @@
             let modal = new bootstrap.Modal(document.getElementById('userModal'));
             let imageModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
 
-            // Image click => show preview
+            // ✅ Image click => show preview
             $(document).on('click', '.preview-img', function() {
                 let imgSrc = $(this).data('img');
                 $('#previewImage').attr('src', imgSrc);
                 imageModal.show();
             });
 
-            // Success Message
+            // ✅ Success Message
             function showMessage(type, message) {
                 let alertClass = (type === 'success') ? 'alert-success' : 'alert-danger';
                 let alertBox = `
-            <div class="alert ${alertClass} alert-dismissible fade show mt-3" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>`;
+                <div class="alert ${alertClass} alert-dismissible fade show mt-3" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
                 $('.main-content').prepend(alertBox);
                 setTimeout(() => {
                     $('.alert').alert('close');
                 }, 4000);
             }
 
-            // Add
+            // ✅ Add Button Click
             $('#addUserBtn').click(function() {
                 $('#userForm')[0].reset();
                 $('#user_id').val('');
+                $('#role').val('');
                 modal.show();
             });
 
-            // Save or Update
-            // $('#userForm').submit(function(e) {
-            //     e.preventDefault();
-            //     let id = $('#user_id').val();
-            //     let url = id ? `/users/${id}` : "{{ route('users.store') }}";
-            //     let method = id ? 'POST' : 'POST';
-            //     let formData = new FormData(this);
-            //     if(id) formData.append('_method', 'PUT');
-
-            //     $.ajax({
-            //         url: url,
-            //         method: method,
-            //         data: formData,
-            //         processData: false,
-            //         contentType: false,
-            //         success: function(res) {
-            //             if(res.success){
-            //                 modal.hide();
-            //                 showMessage('success', res.message);
-            //                 location.reload(); // shortcut, সব images update এর জন্য
-            //             }
-            //         },
-            //         error: function(){
-            //             showMessage('error','Something went wrong!');
-            //         }
-            //     });
-            // });
-            // Save or Update
+            // ✅ Save or Update
             $('#userForm').submit(function(e) {
-    e.preventDefault();
-    let id = $('#user_id').val();
-    let url = id ? `/users/${id}` : "{{ route('users.store') }}";
-    let method = 'POST';
-    let formData = new FormData(this);
-    if (id) formData.append('_method', 'PUT');
+                e.preventDefault();
+                let id = $('#user_id').val();
+                let url = id ? `/users/${id}` : "{{ route('users.store') }}";
+                let formData = new FormData(this);
+                if (id) formData.append('_method', 'PUT');
 
-    $.ajax({
-        url: url,
-        method: method,
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function(res) {
-            if (res.success) {
-                modal.hide();
-                showMessage('success', res.message);
+                $.ajax({
+                    url: url,
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(res) {
+                        if (res.success) {
+                            modal.hide();
+                            showMessage('success', res.message);
+                            location.reload(); // simple reload for full sync
+                        }
+                    },
+                    error: function() {
+                        showMessage('error', 'Something went wrong!');
+                    }
+                });
+            });
 
-                // প্রতিটা কলামের জন্য আলাদা td বানানো
-                let profileTd = res.user.image 
-                    ? `<img src="/${res.user.image}" class="img-thumbnail preview-img"
-                             data-img="/${res.user.image}"
-                             style="width:50px;height:50px;cursor:pointer;">`
-                    : '-';
-
-                let passportTd = res.user.passport_image 
-                    ? `<img src="/${res.user.passport_image}" class="img-thumbnail preview-img"
-                             data-img="/${res.user.passport_image}"
-                             style="width:50px;height:50px;cursor:pointer;">`
-                    : '-';
-
-                let trcTd = res.user.trc_image 
-                    ? `<img src="/${res.user.trc_image}" class="img-thumbnail preview-img"
-                             data-img="/${res.user.trc_image}"
-                             style="width:50px;height:50px;cursor:pointer;">`
-                    : '-';
-
-                let studyTd = res.user.study_confirmation_image 
-                    ? `<img src="/${res.user.study_confirmation_image}" class="img-thumbnail preview-img"
-                             data-img="/${res.user.study_confirmation_image}"
-                             style="width:50px;height:50px;cursor:pointer;">`
-                    : '-';
-
-                let actionTd = `
-                    <button class="btn btn-primary btn-sm editBtn">Edit</button>
-                    <button class="btn btn-danger btn-sm deleteBtn">Delete</button>
-                    <button class="btn btn-warning btn-sm resetBtn">Reset Password</button>
-                `;
-
-                if (id) {
-                    // update row
-                    let row = $(`#userTable tr[data-id='${id}']`);
-                    row.html(`
-                        <td>${res.user.name}</td>
-                        <td>${res.user.email}</td>
-                        <td>${res.user.phone ?? '-'}</td>
-                        <td>${res.user.contract_type ?? '-'}</td>
-                        <td>${res.user.salary ?? '-'}</td>
-                        <td>${profileTd}</td>
-                        <td>${passportTd}</td>
-                        <td>${trcTd}</td>
-                        <td>${studyTd}</td>
-                        <td>${actionTd}</td>
-                    `);
-                } else {
-                    // prepend new row (DESC order)
-                    $('#userTable tbody').prepend(`
-                        <tr data-id="${res.user.id}">
-                            <td>${res.user.name}</td>
-                            <td>${res.user.email}</td>
-                            <td>${res.user.phone ?? '-'}</td>
-                            <td>${res.user.contract_type ?? '-'}</td>
-                            <td>${res.user.salary ?? '-'}</td>
-                            <td>${profileTd}</td>
-                            <td>${passportTd}</td>
-                            <td>${trcTd}</td>
-                            <td>${studyTd}</td>
-                            <td>${actionTd}</td>
-                        </tr>
-                    `);
+            // ✅ Reset Password
+            $(document).on('click', '.resetBtn', function() {
+                let id = $(this).closest('tr').data('id');
+                if (confirm('Are you sure to reset password?')) {
+                    $.ajax({
+                        url: `/users/${id}/reset-password`,
+                        method: 'POST',
+                        data: {
+                            _token: "{{ csrf_token() }}"
+                        },
+                        success: function(res) {
+                            if (res.success) showMessage('success', res.message);
+                        },
+                        error: function() {
+                            showMessage('error', 'Failed to reset password!');
+                        }
+                    });
                 }
-            }
-        },
-        error: function() {
-            showMessage('error', 'Something went wrong!');
-        }
-    });
-});
+            });
 
-
-$(document).on('click','.resetBtn',function(){
-    let id = $(this).closest('tr').data('id');
-    if(confirm('Are you sure to reset password?')){
-        $.ajax({
-            url: `/users/${id}/reset-password`,
-            method: 'POST',
-            data: { _token: "{{ csrf_token() }}" },
-            success: function(res){
-                if(res.success){
-                    showMessage('success', res.message);
-                }
-            },
-            error: function(){
-                showMessage('error','Failed to reset password!');
-            }
-        });
-    }
-});
-
-            // Edit
+            // ✅ Edit User
             $(document).on('click', '.editBtn', function() {
                 let tr = $(this).closest('tr');
                 let id = tr.data('id');
@@ -325,10 +278,15 @@ $(document).on('click','.resetBtn',function(){
                 $('#phone').val(tr.find('td:eq(2)').text());
                 $('#contract_type').val(tr.find('td:eq(3)').text().toLowerCase());
                 $('#salary').val(tr.find('td:eq(4)').text());
+
+                // ✅ Role selected set properly
+                let roleId = tr.data('role-id');
+                $('#role').val(roleId).change();
+
                 modal.show();
             });
 
-            // Delete
+            // ✅ Delete User
             $(document).on('click', '.deleteBtn', function() {
                 if (confirm('Are you sure?')) {
                     let id = $(this).closest('tr').data('id');

@@ -17,48 +17,59 @@ class RolePermissionSeeder extends Seeder
      */
     public function run()
     {
-        $superAdminRole = Role::create(['name' => 'super admin']);
-        $userRole       = Role::create(['name' => 'editor user']);
+        $superAdminRole = Role::firstOrCreate(['name' => 'super admin']);
+        $userRole       = Role::firstOrCreate(['name' => 'employee']);
 
-        //permission group wise 
         $permissionGroups = [
-            'dashboard' => [
-                'admin.dashboard', //for both
+            'dashboard' => ['admin.dashboard'],
 
-            ],
-            'users' => [
-                'users.list',
+            'dough' => ['dough.index', 'dough.destroy'],
 
-            ],
+            //only for admin
+            'settings' => ['users.index', 'day_tasks.index', 'holidays.index', 'events.index'],
+
+            //only for admin
             'roles' => [
-                'roles.list',
+                'roles.index',
                 'roles.create',
-                'roles.edit', //member can edit only own
+                'roles.edit',
                 'roles.update',
                 'roles.delete',
+                'permissions.index'
+            ],
+            //only for admin
+            'shift-management' => [
+                'shift-manager.index',
+                'shift.show'
             ],
 
+            'shift-management' => ['shift-manager.index', 'shift.show', 'checkout.monthly_overview'],
+
+            'task' => ['tasks.monthly.matrix', 'tasks.daily', 'tasks.checklist'],
+
+
+            'preps' => ['preps.list', 'preps.create', 'preps.delete', 'preps.index'],
+
+            'dough-making-table-update' => ['phase.update.inline'],
         ];
-        $userPermission = [
-            'admin.dashboard'
-        ];
-        //insert the permission and assign it to a role
-        foreach ($permissionGroups as $permissionGroupsKey => $permissions) {
-            foreach ($permissions as  $permissionName) {
-                $permission = Permission::create([
-                    'group_name' => $permissionGroupsKey,
-                    'name'       => $permissionName,
-                ]);
+
+        $userPermission = ['admin.dashboard'];
+
+        foreach ($permissionGroups as $group => $permissions) {
+            foreach ($permissions as $permissionName) {
+                if (empty($permissionName)) continue;
+
+                $permission = Permission::firstOrCreate(
+                    ['name' => $permissionName, 'guard_name' => 'web'],
+                    ['group_name' => $group]
+                );
 
                 $superAdminRole->givePermissionTo($permission);
-                $permission->assignRole($superAdminRole);
 
                 if (in_array($permissionName, $userPermission)) {
                     $userRole->givePermissionTo($permission);
-                    $permission->assignRole($userRole);
                 }
             }
         }
-       
     }
 }

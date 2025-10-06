@@ -151,10 +151,10 @@ Route::middleware('auth')->group(function () {
     //roles 
     Route::resource('roles', RolePermissionController::class);
     Route::prefix('admin')->group(function () {
-    Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
-    Route::post('permissions/store-or-update', [PermissionController::class, 'storeOrUpdate'])->name('permissions.storeOrUpdate');
-    Route::delete('permissions/{id}', [PermissionController::class, 'destroy'])->name('permissions.destroy');
-});
+        Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
+        Route::post('permissions/store-or-update', [PermissionController::class, 'storeOrUpdate'])->name('permissions.storeOrUpdate');
+        Route::delete('permissions/{id}', [PermissionController::class, 'destroy'])->name('permissions.destroy');
+    });
 
     // Logout Route
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');

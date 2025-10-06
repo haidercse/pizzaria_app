@@ -130,9 +130,9 @@
                                     <th scope="col" style="width: 10%;">#</th>
                                     <th scope="col" style="width: 20%;">Name</th>
                                     <th scope="col" style="width: 50%;">Permission</th>
-                                    @if (Auth::user()->can('roles.create') || Auth::user()->can('roles.delete'))
+                                    {{-- @if (Auth::user()->can('roles.create') || Auth::user()->can('roles.delete')) --}}
                                         <th scope="col" style="width: 20%;">Action</th>
-                                    @endif
+                                    {{-- @endif --}}
                                 </tr>
 
                             </thead>
@@ -148,13 +148,13 @@
                                         </td>
 
                                         <td>
-                                            @if (Auth::user()->can('roles.create') || Auth::user()->can('roles.delete'))
+                                            {{-- @if (Auth::user()->can('roles.create') || Auth::user()->can('roles.delete')) --}}
                                                 <a href="{{ route('roles.edit', $role->id) }}" class="btn btn-success"><i
                                                         class="fa fa-edit"></i></a>
 
                                                 <a href="#delteModal{{ $role->id }}" data-toggle="modal"
                                                     class="btn btn-danger"><i class="fa fa-trash"></i></a>
-                                            @endif
+                                            {{-- @endif --}}
 
 
                                             <!--Delete  Modal -->

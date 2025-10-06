@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             YeastSaltSeeder::class,
             FlourDistributionSeeder::class,
             EventSeeder::class,
+            PhaseTableSeeder::class
         ]);
     }
 }

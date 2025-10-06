@@ -12,10 +12,18 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('contract')->orderBy('id', 'DESC')->get();
+        
+        $users = User::with(['contract', 'roles'])->orderBy('id', 'DESC')->get();
         return view('backend.pages.users.user_list', compact('users'));
     }
 
+    public function create()
+    {
+        // যদি modal form ব্যবহার করো, তাহলে শুধু redirect দাও বা empty JSON ফেরত দাও
+        return response()->json([
+            'message' => 'Create page not used. Use modal form instead.'
+        ], 200);
+    }
     public function store(Request $request)
     {
         $request->validate([
@@ -24,6 +32,7 @@ class UserController extends Controller
             'phone'  => 'nullable|string|max:20',
             'salary' => 'nullable|numeric',
             'contract_type' => 'required|in:full_time,part_time',
+            'role' => 'required|exists:roles,id', // validate role id
         ]);
 
         $user = new User();
@@ -32,6 +41,12 @@ class UserController extends Controller
         $user->phone = $request->phone;
         $user->password = Hash::make('12345678');
         $user->save();
+
+        // Assign role by ID
+        $role = \Spatie\Permission\Models\Role::find($request->role);
+        if ($role) {
+            $user->assignRole($role);
+        }
 
         // Contract info save
         $contract = new Contract();
@@ -64,6 +79,7 @@ class UserController extends Controller
             'phone'  => 'nullable|string|max:20',
             'salary' => 'nullable|numeric',
             'contract_type' => 'required|in:full_time,part_time',
+            'role' => 'required|exists:roles,id',
         ]);
 
         $user->name  = $request->name;
@@ -71,7 +87,13 @@ class UserController extends Controller
         $user->phone = $request->phone;
         $user->save();
 
-        // contract update
+        // Update role
+        $role = \Spatie\Permission\Models\Role::find($request->role);
+        if ($role) {
+            $user->syncRoles([$role]); // remove old roles and assign new one
+        }
+
+        // Contract update
         if ($user->contract) {
             $user->contract->update([
                 'type' => $request->contract_type,
@@ -87,7 +109,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'User Updated successfully!',
+            'message' => 'User updated successfully!',
             'user'    => [
                 'id'    => $user->id,
                 'name'  => $user->name,
@@ -98,6 +120,7 @@ class UserController extends Controller
             ]
         ]);
     }
+
 
     public function destroy($id)
     {

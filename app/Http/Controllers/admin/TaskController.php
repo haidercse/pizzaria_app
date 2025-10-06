@@ -236,7 +236,10 @@ class TaskController extends Controller
         $tasks = Task::with(['completions' => function ($q) use ($start, $end) {
             $q->whereBetween('date', [$start->toDateString(), $end->toDateString()])
                 ->where('user_id', auth()->id());
-        }])->orderBy('work_side')->get();
+        }])
+            ->where('day_time', '!=', 'daily')
+            ->orderBy('work_side')
+            ->get();
 
         return view('backend.pages.task.monthly_matrix', compact('tasks', 'month', 'dates'));
     }

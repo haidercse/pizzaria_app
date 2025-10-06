@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PhaseTable extends Model
 {
+    protected $table = 'phase_tables';
     use HasFactory;
 
     protected $fillable = [

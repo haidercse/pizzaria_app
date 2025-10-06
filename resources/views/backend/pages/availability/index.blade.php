@@ -10,7 +10,7 @@
     @else
         <div class="card shadow-sm">
             <div class="card-body">
-                <table class="table table-bordered table-striped">
+                <table class="table table-bordered table-striped" id="dataTable">
                     <thead>
                         <tr>
                             <th>Date</th>
@@ -34,14 +34,14 @@
                                 </td>
                                 <td>{{ $availability->note ?? '-' }}</td>
                            
-                                <td>
+                                <td class="form-inline">
                                     <form action="{{ route('availability.edit', $availability->id) }}" method="GET">
-                                        <button type="submit" class="btn btn-primary btn-sm mb-1">Edit</button>
+                                        <button type="submit" class="btn btn-primary btn-sm mr-1 "><i class="fa fa-edit"></i></button>
                                     </form>
                                     <form action="{{ route('availability.destroy', $availability->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this availability?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                        <button type="submit" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button>
                                     </form>
                             </tr>
                         @endforeach

@@ -16,11 +16,11 @@ class RolePermissionController extends Controller
      */
     public function index()
     {
+        
         $user = Auth::user(); 
-        if (!$user || !$user->hasPermissionTo('roles.list')) {
+        if (!$user || !$user->hasPermissionTo('roles.index')) {
             abort(403, 'Unauthorized access to see the list!');
         }
-
         $roles = Role::all();
         return view('backend.pages.roles.index', compact('roles'));
     }

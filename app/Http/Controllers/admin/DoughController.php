@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 
 class DoughController extends Controller
 {
@@ -118,7 +119,13 @@ class DoughController extends Controller
      */
     public function destroy(string $id)
     {
+        $user = Auth::user();
+        if (!$user || !$user->hasPermissionTo('dough.destroy') || $user->is_superadmin != 1) {
+            return response()->json(['success' => false, 'message' => 'Invalid field'], 400);
+        }
+
         try {
+
             $dough = DoughList::findOrFail($id);
             $dough->delete();
 

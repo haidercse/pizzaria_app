@@ -41,9 +41,9 @@
                                     <td>{{ $dough->date }}</td>
                                     <td>
                                         <button class="btn btn-sm btn-warning edit-dough"
-                                            data-id="{{ $dough->id }}">Edit</button>
+                                            data-id="{{ $dough->id }}"><i class="fa fa-edit"></i></button>
                                         <button class="btn btn-sm btn-danger delete-dough"
-                                            data-id="{{ $dough->id }}">Delete</button>
+                                            data-id="{{ $dough->id }}"><i class="fa fa-trash"></i></button>
                                     </td>
                                 </tr>
                             @empty
