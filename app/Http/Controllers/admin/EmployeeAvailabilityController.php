@@ -63,7 +63,7 @@ class EmployeeAvailabilityController extends Controller
     }
 
 
-    // Edit availability
+    // Edit availability 11
     public function edit($id)
     {
         $availability = EmployeeAvailability::where('id', $id)
