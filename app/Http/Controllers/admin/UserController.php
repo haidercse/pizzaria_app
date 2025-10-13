@@ -19,7 +19,7 @@ class UserController extends Controller
 
     public function create()
     {
-        // যদি modal form ব্যবহার করো, তাহলে শুধু redirect দাও বা empty JSON ফেরত দাও
+        
         return response()->json([
             'message' => 'Create page not used. Use modal form instead.'
         ], 200);

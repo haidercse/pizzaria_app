@@ -30,7 +30,7 @@ class EmployeeAvailabilityController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'date.*' => 'required|date',
-            'preferred_time.*' => 'required|in:morning,evening,full_day,custom',
+            'preferred_time.*' => 'required|in:morning,evening,full_day,custom,unavailable',
             'start_time.*' => 'nullable|required_if:preferred_time.*,custom|date_format:H:i',
             'end_time.*' => 'nullable|required_if:preferred_time.*,custom|date_format:H:i|after:start_time.*',
             'note.*' => 'nullable|string|max:255',

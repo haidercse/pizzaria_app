@@ -14,6 +14,7 @@ use App\Http\Controllers\admin\PrepsController;
 use App\Http\Controllers\admin\RolePermissionController;
 use App\Http\Controllers\admin\ShiftManagerController;
 use App\Http\Controllers\admin\TaskController;
+use App\Http\Controllers\admin\TestController;
 use App\Http\Controllers\admin\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -159,3 +160,6 @@ Route::middleware('auth')->group(function () {
     // Logout Route
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });
+
+
+Route::get('/test',[TestController::class,'index'])->name('test.index');

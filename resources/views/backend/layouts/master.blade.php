@@ -11,6 +11,7 @@
     
     @include('backend.layouts.partials.style')
     @stack('styles')
+    
 </head>
 
 <body>

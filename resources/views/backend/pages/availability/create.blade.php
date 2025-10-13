@@ -35,10 +35,14 @@
                                             <option value="evening">Evening</option>
                                             <option value="full_day">Full Day</option>
                                             <option value="custom">Custom</option>
+                                            @if (Auth::user()->contract && Auth::user()->contract->type == 'full_time')
+                                                <option value="unavailable">Unavailable</option>
+                                            @endif
+
                                         </select>
                                     </td>
                                     <td>
-                                        <select name="start_time[]" class="form-select">
+                                        <select name="start_time[]" class="form-select" disabled>
                                             @for ($h = 0; $h < 24; $h++)
                                                 @for ($m = 0; $m < 60; $m += 30)
                                                     @php $time = sprintf('%02d:%02d', $h, $m); @endphp
@@ -48,7 +52,7 @@
                                         </select>
                                     </td>
                                     <td>
-                                        <select name="end_time[]" class="form-select">
+                                        <select name="end_time[]" class="form-select" disabled>
                                             @for ($h = 0; $h < 24; $h++)
                                                 @for ($m = 0; $m < 60; $m += 30)
                                                     @php $time = sprintf('%02d:%02d', $h, $m); @endphp
@@ -158,6 +162,22 @@
                     })
                     .catch(err => console.error(err));
             });
+        });
+        // ✅ This should be placed AFTER the DOMContentLoaded block
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('preferred_time')) {
+                let row = e.target.closest('.availability-row');
+                let startSelect = row.querySelector('[name="start_time[]"]');
+                let endSelect = row.querySelector('[name="end_time[]"]');
+
+                if (e.target.value === 'custom') {
+                    startSelect.disabled = false;
+                    endSelect.disabled = false;
+                } else {
+                    startSelect.disabled = true;
+                    endSelect.disabled = true;
+                }
+            }
         });
     </script>
 @endsection
