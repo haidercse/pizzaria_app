@@ -118,15 +118,29 @@ class TaskController extends Controller
         $task->delete();
         return redirect()->back()->with('success', 'Task deleted successfully!');
     }
-
+    // public function taskOpening()
+    // {
+    //     $date = now()->toDateString();
+    //     $tasks = Task::with(['completions' => function ($q) use ($date) {
+    //         $q->where('date', $date)->where('user_id', auth()->id());
+    //     }])->get();
+    //     return view('backend.pages.task.task_opening', compact('tasks', 'date'));
+    // }
     public function taskOpening()
     {
         $date = now()->toDateString();
-        $tasks = Task::with(['completions' => function ($q) use ($date) {
-            $q->where('date', $date)->where('user_id', auth()->id());
-        }])->get();
+        $tasks = collect(); // খালি collection পাঠানো হলো
         return view('backend.pages.task.task_opening', compact('tasks', 'date'));
     }
+    public function filter(Request $request)
+    {
+        $place = $request->place;
+        $tasks = Task::with(['completions'])->where('place',$place)->get();
+        // $tasks = Task::where('place', $place)->get();
+
+        return view('backend.pages.task.partials.task_table', compact('tasks'));
+    }
+
     public function toggleComplete(Request $request, Task $task)
     {
         // $completion = TaskCompletion::firstOrCreate(
@@ -148,7 +162,8 @@ class TaskController extends Controller
             'user_id' => auth()->id(),
             'date'    => $date,
         ];
-
+        
+        
         // if code column exists and code was provided, include it
         if (Schema::hasColumn('task_completions', 'code') && $code) {
             $attributes['code'] = $code;
@@ -358,6 +373,21 @@ class TaskController extends Controller
             ->get();
 
         return view('backend.pages.task.user_task_checklist', compact('tasks', 'today'));
+    }
+    public function filterUserTasks(Request $request)
+    {
+        $place = $request->input('place');
+
+        $query = \App\Models\Task::where('day_time', 'daily')
+            ->whereDate('date', now()->toDateString());
+
+        if (!empty($place)) {
+            $query->where('place', $place);
+        }
+
+        $tasks = $query->get();
+
+        return view('backend.pages.task.partials.task_list', compact('tasks'))->render();
     }
 
     public function updateUserChecklist(Request $request)

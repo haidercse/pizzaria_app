@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
     //  Task opening
     Route::get('/tasks/opening', [TaskController::class, 'taskOpening'])->name('tasks.opening.index');
     Route::post('/tasks/{task}/toggle', [TaskController::class, 'toggleComplete'])->name('tasks.opening.toggle');
+    Route::post('/tasks/filter', [TaskController::class, 'filter'])->name('tasks.filter');
 
     // Closing Checklist
     Route::get('/tasks/closing', [TaskController::class, 'taskClosingIndex'])
@@ -82,6 +83,7 @@ Route::middleware('auth')->group(function () {
     //task list for user and checklist
     Route::get('/user/tasks/checklist', [TaskController::class, 'userChecklist'])->name('user.tasks.checklist');
     Route::post('/user/tasks/checklist/update', [TaskController::class, 'updateUserChecklist'])->name('user.tasks.checklist.update');
+    Route::post('/user/tasks/filter', [TaskController::class, 'filterUserTasks'])->name('user.tasks.filter');
 
     Route::get('/availability', [EmployeeAvailabilityController::class, 'index'])->name('availability.index');
     Route::get('/availability/create', [EmployeeAvailabilityController::class, 'create'])->name('availability.create');
@@ -162,4 +164,4 @@ Route::middleware('auth')->group(function () {
 });
 
 
-Route::get('/test',[TestController::class,'index'])->name('test.index');
+Route::get('/test', [TestController::class, 'index'])->name('test.index');

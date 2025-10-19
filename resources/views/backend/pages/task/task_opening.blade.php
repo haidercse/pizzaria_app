@@ -11,90 +11,77 @@
         Opening Checklist - {{ \Carbon\Carbon::now()->format('d F Y') }}
     </h3>
 
-    <div class="row">
-        {{-- Front Side --}}
-        <div class="col-lg-6 col-md-12 mb-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-success text-white fw-bold">
-                    Front Side
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover table-striped mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width:50px">#</th>
-                                    <th>Task</th>
-                                    <th style="width:80px">Done</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($tasks->where('work_side', 'front') as $task)
-                                    <tr>
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $task->name }}</td>
-                                        <td class="text-center">
-                                            <input type="checkbox" class="form-check-input task-check"
-                                                data-id="{{ $task->id }}"
-                                                {{ $task->completions->first()?->completed ? 'checked' : '' }}>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- 🔽 Place Filter -->
+    <div class="text-center mb-4">
+        <select id="placeFilter" class="form-select w-auto d-inline-block">
+            <option value="">-- Select Place --</option>
+            <option value="nusle">Nusle</option>
+            <option value="andel">Andel</option>
+        </select>
+    </div>
 
-        {{-- Back Side --}}
-        <div class="col-lg-6 col-md-12 mb-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-primary text-white fw-bold">
-                    Back Side
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover table-striped mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width:50px">#</th>
-                                    <th>Task</th>
-                                    <th style="width:80px">Done</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($tasks->where('work_side', 'back') as $task)
-                                    <tr>
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $task->name }}</td>
-                                        <td class="text-center">
-                                            <input type="checkbox" class="form-check-input task-check"
-                                                data-id="{{ $task->id }}"
-                                                {{ $task->completions->first()?->completed ? 'checked' : '' }}>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    <!-- 🔽 Task Content Area -->
+    <div id="taskContainer">
+        @if ($tasks->count() > 0)
+            @include('backend.pages.task.partials.task_table', ['tasks' => $tasks])
+        @else
+            <div class="text-center text-muted py-4">
+                Please select a place to view tasks.
             </div>
-        </div>
+        @endif
     </div>
 </div>
+@endsection
 
+@push('scripts')
 <script>
-document.querySelectorAll('.task-check').forEach(chk => {
-    chk.addEventListener('change', function() {
-        fetch(`/tasks/${this.dataset.id}/toggle`, {
-            method: 'POST',
+document.addEventListener('DOMContentLoaded', function() {
+
+    // 🔹 Place filter change
+    const placeFilter = document.getElementById('placeFilter');
+    placeFilter.addEventListener('change', function() {
+        let place = this.value;
+
+        fetch("{{ route('tasks.filter') }}", {
+            method: "POST",
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            }
-        });
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({ place: place })
+        })
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('taskContainer').innerHTML = html;
+        })
+        .catch(err => console.error('Filter Error:', err));
     });
+
+    // 🔹 Event delegation for dynamically loaded checkboxes
+    document.getElementById('taskContainer').addEventListener('change', function(e) {
+        if (e.target && e.target.classList.contains('task-check')) {
+            const taskId = e.target.dataset.id;
+            const isChecked = e.target.checked ? 1 : 0;
+
+            fetch(`/tasks/${taskId}/toggle`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    date: '{{ \Carbon\Carbon::now()->toDateString() }}'
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('Task toggled:', data);
+            })
+            .catch(err => console.error('Toggle Error:', err));
+        }
+    });
+
 });
 </script>
-@endsection
+@endpush

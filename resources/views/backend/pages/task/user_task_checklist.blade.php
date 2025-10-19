@@ -2,80 +2,62 @@
 @section('title', 'My Daily Checklist')
 
 @section('admin-content')
-    <div class="container mt-3">
-        <h4 class="text-center mb-3">📅 My Tasks for {{ \Carbon\Carbon::parse($today)->format('d M Y') }}</h4>
+<div class="container mt-3">
+    <h4 class="text-center mb-3">📅 My Tasks for {{ \Carbon\Carbon::parse($today)->format('d M Y') }}</h4>
 
-        @if ($tasks->isEmpty())
-            <div class="alert alert-info text-center">No tasks for today 🎉</div>
-        @else
-            <div class="row justify-content-center">
-                <div class="col-lg-8 col-md-10 col-12">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            @foreach ($tasks as $task)
-                                @php
-                                    $subTasks = $task->sub_tasks;
-                                    $doneStates = $task->is_done ?? [];
-                                @endphp
-
-                                @foreach ($subTasks as $i => $subTask)
-                                    <div
-                                        class="form-check mb-2 p-2 border rounded d-flex align-items-center justify-content-between">
-                                        <label class="form-check-label flex-grow-1 d-flex align-items-center">
-                                            <input type="checkbox" class="form-check-input me-2 checklist"
-                                                data-id="{{ $task->id }}" data-index="{{ $i }}"
-                                                {{ !empty($doneStates[$i]) && $doneStates[$i] ? 'checked' : '' }}>
-                                            <span
-                                                class="{{ !empty($doneStates[$i]) && $doneStates[$i] ? 'text-decoration-line-through text-muted' : '' }}">
-                                                {{ trim($subTask) }}
-                                            </span>
-                                        </label>
-                                    </div>
-                                @endforeach
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endif
+    <!-- 🔽 Dropdown -->
+    <div class="text-center mb-4">
+        <select id="placeFilter" class="form-select w-auto d-inline-block">
+            <option value="">-- Select Place --</option>
+            <option value="nusle">Nusle</option>
+            <option value="andel">Andel</option>
+        </select>
     </div>
-    @push('scripts')
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('.checklist').forEach(function(checkbox) {
-                    checkbox.addEventListener('change', function() {
-                        let taskId = this.dataset.id;
-                        let index = this.dataset.index;
-                        let isDone = this.checked ? 1 : 0;
-                        let label = this.closest('.form-check').querySelector('span');
 
-                        fetch("{{ route('user.tasks.checklist.update') }}", {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                                },
-                                body: JSON.stringify({
-                                    id: taskId,
-                                    index: index,
-                                    is_done: isDone
-                                })
-                            })
-                            .then(res => res.json())
-                            .then(data => {
-                                if (data.success) {
-                                    if (isDone) {
-                                        label.classList.add("text-decoration-line-through",
-                                            "text-muted");
-                                    } else {
-                                        label.classList.remove("text-decoration-line-through",
-                                            "text-muted");
-                                    }
-                                }
-                            });
-                    });
-                });
-            });
-        </script>
-    @endpush
+    <!-- 🔽 Task List Container -->
+    <div id="taskContainer" class="text-center text-muted">
+        <p>Please select a place to view tasks 🧭</p>
+    </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const placeFilter = document.getElementById('placeFilter');
+    const taskContainer = document.getElementById('taskContainer');
+
+    placeFilter.addEventListener('change', function() {
+        let place = this.value;
+
+        if (place === '') {
+            taskContainer.innerHTML = `<p class="text-muted">Please select a place to view tasks 🧭</p>`;
+            return;
+        }
+
+        taskContainer.innerHTML = `<div class="text-center py-3">
+            <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading tasks...</p>
+        </div>`;
+
+        fetch("{{ route('user.tasks.filter') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({ place: place })
+        })
+        .then(res => res.text())
+        .then(html => {
+            taskContainer.innerHTML = html;
+        })
+        .catch(() => {
+            taskContainer.innerHTML = `<p class="text-danger">Something went wrong 😢</p>`;
+        });
+    });
+});
+</script>
+@endpush
