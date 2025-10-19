@@ -78,6 +78,8 @@ Route::middleware('auth')->group(function () {
 
     //task list for user and checklist
     Route::get('/tasks/checklist', [TaskController::class, 'checklist'])->name('tasks.checklist');
+
+    Route::post('/tasks/checklist/filter', [TaskController::class, 'filterChecklistByPlace'])->name('tasks.checklist.filter');
     Route::post('/tasks/checklist/update', [TaskController::class, 'updateChecklist'])->name('tasks.checklist.update');
 
     //task list for user and checklist

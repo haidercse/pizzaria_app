@@ -147,33 +147,37 @@ class DoughController extends Controller
     private function calculateValues($dough, $liter)
     {
         switch ($liter) {
+            case 3:
+                $dough->dough_total_weight = 7.70;
+                $dough->dough_num_of_cajas = 2.70;
+                break;
             case 10:
-                $dough->dough_total_weight = 30;
-                $dough->dough_num_of_cajas = 6;
+                $dough->dough_total_weight = 25.70;
+                $dough->dough_num_of_cajas = 9.00;
                 break;
             case 11:
-                $dough->dough_total_weight = 33;
-                $dough->dough_num_of_cajas = 7;
+                $dough->dough_total_weight = 28.30;
+                $dough->dough_num_of_cajas = 9.90;
                 break;
             case 12:
-                $dough->dough_total_weight = 36;
-                $dough->dough_num_of_cajas = 8;
+                $dough->dough_total_weight = 30.90;
+                $dough->dough_num_of_cajas = 10.80;
                 break;
             case 13:
-                $dough->dough_total_weight = 39;
-                $dough->dough_num_of_cajas = 9;
+                $dough->dough_total_weight = 33.50;
+                $dough->dough_num_of_cajas = 11.70;
                 break;
             case 14:
-                $dough->dough_total_weight = 42;
-                $dough->dough_num_of_cajas = 10;
+                $dough->dough_total_weight = 36.00;
+                $dough->dough_num_of_cajas = 12.60;
                 break;
             case 15:
-                $dough->dough_total_weight = 45;
-                $dough->dough_num_of_cajas = 11;
+                $dough->dough_total_weight = 38.60;
+                $dough->dough_num_of_cajas = 13.50;
                 break;
             case 16:
-                $dough->dough_total_weight = 48;
-                $dough->dough_num_of_cajas = 12;
+                $dough->dough_total_weight = 41.20;
+                $dough->dough_num_of_cajas = 14.50;
                 break;
             default:
                 $dough->dough_total_weight = 0;

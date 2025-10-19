@@ -95,7 +95,7 @@
 
                                 @if (Auth::user()->can('events.index') || Auth::user()->hasRole('super admin') || Auth::user()->is_superadmin == 1)
                                     <li class="{{ request()->routeIs('events.index') ? 'active' : '' }}">
-                                        <a href="{{ route('events.index') }}">Events</a>
+                                        <a href="{{ route('events.index') }}">Events/Catering</a>
                                     </li>
                                 @endif
                             </ul>

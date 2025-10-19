@@ -31,7 +31,10 @@ class TaskController extends Controller
             $query->whereYear('date', $year)
                 ->whereMonth('date', $month);
         }
-
+        // 🔹 Filter by place (new)
+        if ($request->has('place') && $request->place != '') {
+            $query->where('place', $request->place);
+        }
         $tasks = $query->orderBy('date', 'ASC')->get()->groupBy('date'); // group by date
 
         return view('backend.pages.task.daily_task', compact('tasks'));
@@ -135,7 +138,7 @@ class TaskController extends Controller
     public function filter(Request $request)
     {
         $place = $request->place;
-        $tasks = Task::with(['completions'])->where('place',$place)->get();
+        $tasks = Task::with(['completions'])->where('place', $place)->get();
         // $tasks = Task::where('place', $place)->get();
 
         return view('backend.pages.task.partials.task_table', compact('tasks'));
@@ -162,8 +165,8 @@ class TaskController extends Controller
             'user_id' => auth()->id(),
             'date'    => $date,
         ];
-        
-        
+
+
         // if code column exists and code was provided, include it
         if (Schema::hasColumn('task_completions', 'code') && $code) {
             $attributes['code'] = $code;
@@ -193,7 +196,7 @@ class TaskController extends Controller
         return view('backend.pages.task.task_closing', compact('tasks', 'date'));
     }
 
-    public function toggleClosingComplete(Request $request, Task $task)
+    public function toggleClosingComplete(Task $task)
     {
         $completion = TaskCompletion::firstOrCreate(
             ['task_id' => $task->id, 'user_id' => auth()->id(), 'date' => now()->toDateString()],
@@ -234,9 +237,35 @@ class TaskController extends Controller
     //     return view('backend.pages.task.monthly_matrix', compact('tasks', 'completions', 'period', 'month'));
     // }
 
+    // public function monthlyMatrix(Request $request)
+    // {
+    //     $month = $request->get('month', now()->format('Y-m'));
+
+    //     $start = \Carbon\Carbon::parse($month)->startOfMonth();
+    //     $end = \Carbon\Carbon::parse($month)->endOfMonth();
+
+    //     // মাসের সব তারিখ বের করব
+    //     $dates = [];
+    //     for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+    //         $dates[] = $date->toDateString();
+    //     }
+
+    //     // মাসের সব task লোড করব, সাথে এই মাসের completions
+    //     $tasks = Task::with(['completions' => function ($q) use ($start, $end) {
+    //         $q->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+    //             ->where('user_id', auth()->id());
+    //     }])
+    //         ->where('day_time', '!=', 'daily')
+    //         ->orderBy('work_side')
+    //         ->get();
+
+    //     return view('backend.pages.task.monthly_matrix', compact('tasks', 'month', 'dates'));
+    // }
+
     public function monthlyMatrix(Request $request)
     {
         $month = $request->get('month', now()->format('Y-m'));
+        $place = $request->get('place'); // add place filter
 
         $start = \Carbon\Carbon::parse($month)->startOfMonth();
         $end = \Carbon\Carbon::parse($month)->endOfMonth();
@@ -248,17 +277,25 @@ class TaskController extends Controller
         }
 
         // মাসের সব task লোড করব, সাথে এই মাসের completions
-        $tasks = Task::with(['completions' => function ($q) use ($start, $end) {
+        $tasksQuery = Task::with(['completions' => function ($q) use ($start, $end) {
             $q->whereBetween('date', [$start->toDateString(), $end->toDateString()])
                 ->where('user_id', auth()->id());
-        }])
-            ->where('day_time', '!=', 'daily')
-            ->orderBy('work_side')
-            ->get();
+        }])->where('day_time', '!=', 'daily')
+            ->orderBy('work_side');
+
+        if ($place) {
+            $tasksQuery->where('place', $place);
+        }
+
+        $tasks = $tasksQuery->get();
+
+        // Ajax request হলে partial return কর
+        if ($request->ajax()) {
+            return view('backend.pages.task.partials.monthly_task_table', compact('tasks', 'dates'))->render();
+        }
 
         return view('backend.pages.task.monthly_matrix', compact('tasks', 'month', 'dates'));
     }
-
 
 
 
@@ -341,6 +378,23 @@ class TaskController extends Controller
         $tasks = $query->orderBy('date', 'ASC')->get()->groupBy('date');
 
         return view('backend.pages.task.daily_task_checklist', compact('tasks'));
+    }
+    public function filterChecklistByPlace(Request $request)
+    {
+        $query = Task::where('day_time', 'daily');
+
+        if ($request->has('place') && $request->place != '') {
+            $query->where('place', $request->place);
+        }
+
+        if ($request->has('month') && $request->month != '') {
+            [$year, $month] = explode('-', $request->month);
+            $query->whereYear('date', $year)->whereMonth('date', $month);
+        }
+
+        $tasks = $query->orderBy('date', 'ASC')->get()->groupBy('date');
+
+        return view('backend.pages.task.partials.daily_task_list', compact('tasks'))->render();
     }
 
     public function updateChecklist(Request $request)

@@ -12,7 +12,8 @@
                         @endphp
 
                         @foreach ($subTasks as $i => $subTask)
-                            <div class="form-check mb-2 p-2 border rounded d-flex align-items-center justify-content-between">
+                            <div
+                                class="form-check mb-2 p-2 border rounded d-flex align-items-center justify-content-between">
                                 <label class="form-check-label flex-grow-1 d-flex align-items-center">
                                     <input type="checkbox" class="form-check-input me-2 checklist"
                                         data-id="{{ $task->id }}" data-index="{{ $i }}"
@@ -30,3 +31,4 @@
         </div>
     </div>
 @endif
+

@@ -3,75 +3,95 @@
 @section('page-title', 'Daily Task Checklist')
 
 @section('admin-content')
-    <div class="main-content">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3>✅ Daily Task Checklist</h3>
-            <form method="GET" action="{{ route('tasks.checklist') }}" class="d-flex gap-2">
-                <input type="month" class="form-control form-control-sm" name="month" value="{{ request('month') }}">
-                <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-            </form>
-        </div>
+<div class="main-content">
 
-        @forelse($tasks as $date => $taskList)
-            <div class="card mb-3 shadow-sm">
-                <div class="card-header bg-light d-flex justify-content-between">
-                    <strong>{{ \Carbon\Carbon::parse($date)->format('d M Y') }}</strong>
-                    <span class="badge bg-info text-dark">Daily</span>
-                </div>
-                <div class="card-body">
-                    @foreach ($taskList as $task)
-                        @php
-                            $subTasks = $task->sub_tasks;
-                            $doneStates = $task->is_done ?? [];
-                        @endphp
-
-                        @foreach ($subTasks as $i => $subTask)
-                            <div class="form-check mb-2">
-                                <input type="checkbox" class="form-check-input checklist" data-id="{{ $task->id }}"
-                                    data-index="{{ $i }}"
-                                    {{ !empty($doneStates[$i]) && $doneStates[$i] ? 'checked' : '' }}>
-                                <label class="form-check-label">
-                                    {{ $subTask }}
-                                </label>
-                            </div>
-                        @endforeach
-                    @endforeach
-                </div>
-            </div>
-        @empty
-            <div class="alert alert-warning">No tasks found for this month.</div>
-        @endforelse
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>✅ Daily Task Checklist</h3>
+        <form method="GET" action="{{ route('tasks.checklist') }}" class="d-flex gap-2">
+            <input type="month" class="form-control form-control-sm" name="month" value="{{ request('month') }}">
+            <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+        </form>
     </div>
+
+    <!-- 🔽 Place Filter -->
+    <div class="text-center mb-4">
+        <select id="placeFilter" class="form-select w-auto d-inline-block">
+            <option value="">-- Select Place --</option>
+            <option value="nusle">Nusle</option>
+            <option value="andel">Andel</option>
+        </select>
+    </div>
+
+    <!-- 🔽 Task Container -->
+    <div id="taskContainer">
+        @include('backend.pages.task.partials.daily_task_list', ['tasks' => $tasks])
+    </div>
+
+</div>
 @endsection
 
 @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.checklist').forEach(function(checkbox) {
-                checkbox.addEventListener('change', function() {
-                    let taskId = this.dataset.id;
-                    let index = this.dataset.index;
-                    let isDone = this.checked ? 1 : 0;
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const placeFilter = document.getElementById('placeFilter');
+    const taskContainer = document.getElementById('taskContainer');
 
-                    fetch("{{ route('tasks.checklist.update') }}", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                            },
-                            body: JSON.stringify({
-                                id: taskId,
-                                index: index,
-                                is_done: isDone
-                            })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            console.log("Server response:", data);
-                        });
-                });
-            });
+    // 🔹 Filter by Place (AJAX)
+    placeFilter.addEventListener('change', function() {
+        let place = this.value;
+        let month = "{{ request('month') ?? '' }}";
+
+        taskContainer.innerHTML = `<div class="text-center py-3">
+            <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading tasks...</p>
+        </div>`;
+
+        fetch("{{ route('tasks.checklist.filter') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({ place: place, month: month })
+        })
+        .then(res => res.text())
+        .then(html => {
+            taskContainer.innerHTML = html;
+        })
+        .catch(() => {
+            taskContainer.innerHTML = `<p class="text-danger">Something went wrong 😢</p>`;
         });
-    </script>
-@endpush
+    });
 
+    // 🔹 Update Checklist (AJAX)
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.classList.contains('checklist')) {
+            let checkbox = e.target;
+            let taskId = checkbox.dataset.id;
+            let index = checkbox.dataset.index;
+            let isChecked = checkbox.checked ? 1 : 0;
+
+            fetch("{{ route('tasks.checklist.update') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({
+                    id: taskId,
+                    index: index,
+                    is_done: isChecked
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('Checklist updated:', data);
+            })
+            .catch(err => console.error(err));
+        }
+    });
+});
+</script>
+@endpush

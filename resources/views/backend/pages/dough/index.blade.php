@@ -40,10 +40,10 @@
                                     <td>{{ $dough->dough_num_of_cajas }}</td>
                                     <td>{{ $dough->date }}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-warning edit-dough"
-                                            data-id="{{ $dough->id }}"><i class="fa fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-danger delete-dough"
-                                            data-id="{{ $dough->id }}"><i class="fa fa-trash"></i></button>
+                                        <button class="btn btn-sm btn-warning edit-dough" data-id="{{ $dough->id }}"><i
+                                                class="fa fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-danger delete-dough" data-id="{{ $dough->id }}"><i
+                                                class="fa fa-trash"></i></button>
                                     </td>
                                 </tr>
                             @empty
@@ -70,12 +70,21 @@
                     <form id="doughForm">
                         @csrf
                         <input type="hidden" id="dough_id" name="id">
-
-                        <div class="mb-3">
+                        <div class="mb-3 form-group">
                             <label class="form-label fw-semibold">Dough Litter</label>
-                            <input type="number" class="form-control" id="dough_litter" name="dough_litter" min="10"
-                                max="16" required>
-                            <small class="text-muted">Allowed only 10–16</small>
+                            <select name="dough_litter" id="dough_litter" class="form-control">
+                                <option value="3">3</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                                <option value="13">13</option>
+                                <option value="14">14</option>
+                                <option value="15">15</option>
+                                <option value="16">16</option>
+                            </select>
+                            {{-- <input type="number" class="form-control" id="dough_litter" name="dough_litter" min="10"
+                                max="16" required> --}}
+
                         </div>
 
                         <button type="submit" class="btn btn-success w-100" id="saveBtn">Save</button>

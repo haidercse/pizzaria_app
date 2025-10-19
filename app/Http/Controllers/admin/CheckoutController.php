@@ -141,7 +141,7 @@ class CheckoutController extends Controller
 
                 if ($isHoliday) {
                     // Holiday → 30% extra
-                    $userSalary += $checkout->worked_hours * $rate * 1.3;
+                    $userSalary += $checkout->worked_hours * $rate * 1.2;
                 } elseif (in_array($dayOfWeek, ['Saturday', 'Sunday'])) {
                     // Weekend → 10% extra
                     $userSalary += $checkout->worked_hours * $rate * 1.1;
