@@ -83,7 +83,7 @@
                                     <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-6 mb-3 text-center">
-                                    <label for="trc_image" class="d-block mb-2">Your TRC</label>
+                                    <label for="trc_image" class="d-block mb-2">Your TRC(Temporary Resident Card)</label>
                                     @if (auth()->user()->trc_image)
                                         <img id="trcPreview" src="{{ asset(auth()->user()->trc_image) }}"
                                             class="img-thumbnail mb-2" style="max-width: 150px;">

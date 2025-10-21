@@ -35,7 +35,7 @@
                             <th>Salary</th>
                             <th>Profile</th>
                             <th>Passport</th>
-                            <th>TRC</th>
+                            <th>TRC(Temporary Resident Card)</th>
                             <th>Study Confirmation</th>
                             <th>Action</th>
                         </tr>

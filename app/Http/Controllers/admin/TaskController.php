@@ -138,7 +138,14 @@ class TaskController extends Controller
     public function filter(Request $request)
     {
         $place = $request->place;
-        $tasks = Task::with(['completions'])->where('place', $place)->get();
+        $day_time = $request->day_time ?? null;
+
+        $tasks = Task::with(['completions'])
+            ->where('place', $place)
+            ->when($day_time, function ($query, $day_time) {
+                $query->where('day_time', $day_time);
+            })
+            ->get();
         // $tasks = Task::where('place', $place)->get();
 
         return view('backend.pages.task.partials.task_table', compact('tasks'));
@@ -186,7 +193,7 @@ class TaskController extends Controller
 
 
 
-    public function taskClosingIndex()
+    public function taskClosingIndex(Request $request)
     {
         $date = now()->toDateString();
         $tasks = Task::with(['completions' => function ($q) use ($date) {
