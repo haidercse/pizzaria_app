@@ -1,7 +1,9 @@
 @extends('backend.layouts.master')
 
 @section('title', 'Permission Management')
-
+@php
+    $groupName = \Spatie\Permission\Models\Permission::select('group_name')->distinct()->pluck('group_name');
+@endphp
 @section('admin-content')
     <div class="container">
         <div class="card">
@@ -26,8 +28,7 @@
                                 <td class="permission_group">{{ $permission->group_name }}</td>
                                 <td class="permission_name">{{ $permission->name }}</td>
                                 <td>
-                                    <button class="btn btn-success editPermission"
-                                        data-id="{{ $permission->id }}"
+                                    <button class="btn btn-success editPermission" data-id="{{ $permission->id }}"
                                         data-name="{{ $permission->name }}"
                                         data-group="{{ $permission->group_name }}">Edit</button>
                                     <button class="btn btn-danger deletePermission"
@@ -57,6 +58,14 @@
                         <div id="permissionFields">
                             <div class="form-group mb-2">
                                 <label for="group_name">Group Name</label>
+
+                                <select name="group_name" id="group_name">
+                                    <option value=""></option>
+                                    @foreach ($groupName as $name)
+                                        <option value="{{ $name }}">{{ $name }}</option>
+                                    @endforeach
+                                </select>
+
                                 <input type="text" name="group_name" id="group_name" class="form-control"
                                     placeholder="Enter Group Name" required>
                             </div>
@@ -93,16 +102,29 @@
                 $('#permissionForm')[0].reset();
                 $('#permission_id').val('');
                 $('#permissionFields').html(`
-                    <div class="form-group mb-2">
-                        <label for="group_name">Group Name</label>
-                        <input type="text" name="group_name" id="group_name" class="form-control"
-                            placeholder="Enter Group Name" required>
+                    
+                    <div class="form-group d-flex mb-2">
+                         <select name="group_name" id="group_name" class="form-control select2" required>
+                                    <option value="">Group Name</option>
+                                    @foreach ($groupName as $name)
+                                        <option value="{{ $name }}">{{ $name }}</option>
+                                    @endforeach
+                                </select>
                     </div>
                     <div class="form-group d-flex mb-2 permission-row">
                         <input type="text" name="name[]" class="form-control me-2" placeholder="Permission Name" required>
                         <button type="button" class="btn btn-success addMoreBtn">+</button>
                     </div>
                 `);
+                // ✅ Initialize Select2 dynamically
+                setTimeout(() => {
+                    $('#group_name').select2({
+                        tags: true,
+                        placeholder: 'Select or type a group name',
+                        allowClear: true,
+                        width: '100%'
+                    });
+                }, 100);
                 $('#permissionModal .modal-title').text('Add Permission');
                 $('#permissionModal').modal('show');
             });
@@ -177,7 +199,8 @@
                             } else {
                                 // Update existing row
                                 var row = $('#row_' + res.permissions[0].id);
-                                row.find('.permission_group').text(res.permissions[0].group_name);
+                                row.find('.permission_group').text(res.permissions[0]
+                                    .group_name);
                                 row.find('.permission_name').text(res.permissions[0].name);
                             }
                             $('#permissionModal').modal('hide');
