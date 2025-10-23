@@ -1,5 +1,9 @@
 @extends('backend.layouts.master')
 @section('title', 'Edit Availability')
+@section('page-title', 'Edit Availability')
+@section('breadcrumb-home_route', route('availability.index'))
+@section('breadcrumb-home_title', 'Availability List')
+@section('breadcrumb-current', 'Edit Availability')
 
 @section('admin-content')
     <div class="container mt-4">
@@ -39,6 +43,9 @@
                                     </option>
                                     <option value="custom"
                                         {{ $availability->preferred_time == 'custom' ? 'selected' : '' }}>Custom</option>
+                                    <option value="unavailable"
+                                        {{ $availability->preferred_time == 'unavailable' ? 'selected' : '' }}>Unavailable
+                                    </option>
                                 </select>
                                 <div class="invalid-feedback" id="preferred_timeError"></div>
                             </div>

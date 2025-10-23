@@ -45,8 +45,20 @@ class EmployeeAvailabilityController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()->all()], 422);
         }
+        $employeeId = auth()->id();
 
         foreach ($request->date as $i => $date) {
+            
+            $exists = EmployeeAvailability::where('employee_id', $employeeId)
+                ->where('date', $date)
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'errors' => ["You have already submitted availability for {$date}."]
+                ], 422);
+            }
+
             EmployeeAvailability::create([
                 'employee_id'   => auth()->id(),
                 'date'          => $date,

@@ -40,10 +40,10 @@ class RolePermissionSeeder extends Seeder
             //only for admin
             'shift-management' => [
                 'shift-manager.index',
-                'shift.show'
+                'shift.show',
+                'checkout.monthly_overview',
+                'availability.edit'
             ],
-
-            'shift-management' => ['shift-manager.index', 'shift.show', 'checkout.monthly_overview'],
 
             'task' => ['tasks.monthly.matrix', 'tasks.daily', 'tasks.checklist'],
 
@@ -51,6 +51,7 @@ class RolePermissionSeeder extends Seeder
             'preps' => ['preps.list', 'preps.create', 'preps.delete', 'preps.index'],
 
             'dough-making-table-update' => ['phase.update.inline'],
+            
         ];
 
         $userPermission = ['admin.dashboard'];

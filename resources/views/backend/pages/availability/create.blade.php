@@ -29,16 +29,14 @@
                                     <td><input type="date" name="date[]" class="form-control dateInput" required></td>
                                     <td><input type="text" class="form-control dayInput" readonly placeholder="Day"></td>
                                     <td>
-                                        <select name="preferred_time[]" class="form-select preferred_time" required>
+                                        <select name="preferred_time[]" class="form-select form-control preferred_time"
+                                            required>
                                             <option value="">--Select--</option>
                                             <option value="morning">Morning</option>
                                             <option value="evening">Evening</option>
                                             <option value="full_day">Full Day</option>
                                             <option value="custom">Custom</option>
-                                            @if (Auth::user()->contract && Auth::user()->contract->type == 'full_time')
-                                                <option value="unavailable">Unavailable</option>
-                                            @endif
-
+                                            <option value="unavailable">Unavailable</option>
                                         </select>
                                     </td>
                                     <td>

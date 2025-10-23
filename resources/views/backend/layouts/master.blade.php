@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <link rel="icon" type="image/png" href="{{ asset('admin/assets/images/frankie/pizza_red_only.png') }}">
     <title> @yield('title') </title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
