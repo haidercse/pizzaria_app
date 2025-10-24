@@ -28,7 +28,7 @@ class AuthController extends Controller
             $request->session()->regenerate();
             return redirect()->route('admin.dashboard');
         }
-
+        
         return redirect()->back()->withErrors(['Invalid credentials']);
     }
 
