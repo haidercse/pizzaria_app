@@ -155,7 +155,8 @@
                                     <a href="{{ route('tasks.create') }}">Task Create</a>
                                 </li>
 
-                                <li class=" super-admin-only {{ request()->routeIs('tasks.monthly.matrix') ? 'active' : '' }}">
+                                <li
+                                    class=" super-admin-only {{ request()->routeIs('tasks.monthly.matrix') ? 'active' : '' }}">
                                     <a href="{{ route('tasks.monthly.matrix') }}">Task Monthly check (Opening and
                                         Closing)</a>
                                 </li>
@@ -164,7 +165,8 @@
                                     <a href="{{ route('tasks.daily') }}">Daily Task Show and Edit for manager</a>
                                 </li>
 
-                                <li class=" super-admin-only {{ request()->routeIs('tasks.checklist') ? 'active' : '' }}">
+                                <li
+                                    class=" super-admin-only {{ request()->routeIs('tasks.checklist') ? 'active' : '' }}">
                                     <a href="{{ route('tasks.checklist') }}">Daily Task checklist full month for
                                         manager</a>
                                 </li>
@@ -233,31 +235,6 @@
                             </ul>
                         </li>
                     @endif
-                    @if (Auth::user()->can('roles.index') ||
-                            Auth::user()->hasRole('super admin') ||
-                            Auth::user()->can('roles.create') ||
-                            Auth::user()->can('permissions.index') ||
-                            Auth::user()->is_superadmin == 1)
-                        <li
-                            class=" super-admin-only{{ request()->routeIs('permissions.index') || request()->routeIs('roles.index') || request()->routeIs('roles.create') || request()->routeIs('roles.edit') ? 'active' : '' }}">
-                            <a href="javascript:void(0)" aria-expanded="true">
-                                <span>Role & Permission</span>
-                            </a>
-                            <ul class="collapse">
-                                <li class="{{ request()->routeIs('roles.index') ? 'active' : '' }}">
-                                    <a href="{{ route('roles.index') }}">Role</a>
-                                </li>
-                                <li class="{{ request()->routeIs('roles.create') ? 'active' : '' }}">
-                                    <a href="{{ route('roles.create') }}">Role Create</a>
-                                </li>
-                                <li class="{{ request()->routeIs('permissions.index') ? 'active' : '' }}">
-                                    <a href="{{ route('permissions.index') }}">Permission</a>
-                                    <!-- FIXED: Empty route removed -->
-                                </li>
-                            </ul>
-                        </li>
-                    @endif
-
                     @if (Auth::user()->can('users.index') ||
                             Auth::user()->can('day_tasks.index') ||
                             Auth::user()->can('holidays.index') ||
@@ -294,18 +271,44 @@
                             </ul>
                         </li>
                     @endif
+                    @if (Auth::user()->can('roles.index') ||
+                            Auth::user()->hasRole('super admin') ||
+                            Auth::user()->can('roles.create') ||
+                            Auth::user()->can('permissions.index') ||
+                            Auth::user()->is_superadmin == 1)
+                        <li
+                            class=" super-admin-only{{ request()->routeIs('permissions.index') || request()->routeIs('roles.index') || request()->routeIs('roles.create') || request()->routeIs('roles.edit') ? 'active' : '' }}">
+                            <a href="javascript:void(0)" aria-expanded="true">
+                                <span>Role & Permission</span>
+                            </a>
+                            <ul class="collapse">
+                                <li class="{{ request()->routeIs('roles.index') ? 'active' : '' }}">
+                                    <a href="{{ route('roles.index') }}">Role</a>
+                                </li>
+                                <li class="{{ request()->routeIs('roles.create') ? 'active' : '' }}">
+                                    <a href="{{ route('roles.create') }}">Role Create</a>
+                                </li>
+                                <li class="{{ request()->routeIs('permissions.index') ? 'active' : '' }}">
+                                    <a href="{{ route('permissions.index') }}">Permission</a>
+                                    <!-- FIXED: Empty route removed -->
+                                </li>
+                            </ul>
+                        </li>
+                    @endif
+
+
                     <li class="{{ request()->routeIs('profile') ? 'active' : '' }}">
                         <a class="{{ request()->routeIs('profile') ? 'active' : '' }}" href="{{ route('profile') }}"
                             aria-expanded="true">
                             <span>Profile</span>
                         </a>
                     </li>
-                    <li class="{{ request()->routeIs('logout') ? 'active' : '' }}">
+                    {{-- <li class="{{ request()->routeIs('logout') ? 'active' : '' }}">
                         <a class="{{ request()->routeIs('logout') ? 'active' : '' }}" href="{{ route('logout') }}"
                             aria-expanded="true">
                             <span>Logout</span>
                         </a>
-                    </li>
+                    </li> --}}
                     {{-- Remove this dummy section in production --}}
                     {{-- <li>
                         <a href="javascript:void(0)" aria-expanded="true"><i class="fa fa-align-left"></i> <span>Multi level menu</span></a>
