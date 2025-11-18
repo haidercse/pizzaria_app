@@ -151,7 +151,7 @@
                                         $roles = \Spatie\Permission\Models\Role::where(
                                             'name',
                                             '!=',
-                                            'super admin',
+                                            'super',
                                         )->get();
                                     @endphp
                                     @foreach ($roles as $role)

@@ -7,12 +7,16 @@ use App\Models\DoughList;
 use App\Models\Event;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
 
     public function index()
     {
+        if (!Auth::check()) {
+            return redirect('login');
+        }
         $startOfWeek = Carbon::now()->startOfWeek();
         $endOfWeek   = Carbon::now()->endOfWeek();
 
