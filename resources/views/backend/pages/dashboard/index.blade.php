@@ -56,6 +56,9 @@
 
         {{-- Dough Stats Cards --}}
         <div class="sales-report-area mt-5 mb-5">
+            <div class=" bg-success text-white">
+                <h4 class="mb-0">Dough Stats</h4>
+            </div>
             <div class="row g-3">
                 @foreach ($weekDays as $dough)
                     <div class="col-12 col-sm-6 col-md-4">
