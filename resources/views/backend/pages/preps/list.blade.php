@@ -16,7 +16,8 @@
             <table class="table table-hover align-middle text-center shadow-sm" id="dataTable">
                 <thead class="table-success">
                     <tr>
-                        <th style="width:60%">Name</th>
+                        <th style="width:50%">Name</th>
+                        <th style="width:10%">Visible</th>
                         <th style="width:40%">Actions</th>
                     </tr>
                 </thead>
@@ -24,24 +25,29 @@
                     @forelse($preps as $prep)
                         <tr id="prep-{{ $prep->id }}">
                             <td class="fw-semibold text-dark">{{ $prep->name }}</td>
+
+                            <!-- Visibility Checkbox -->
+                            <td>
+                                <input type="checkbox" class="toggle-visibility" data-id="{{ $prep->id }}"
+                                    {{ $prep->is_visible ? 'checked' : '' }}>
+                            </td>
+
                             <td>
                                 <button class="btn btn-sm btn-outline-primary rounded-pill edit-prep me-2"
-                                    data-id="{{ $prep->id }}">
-                                    ✏️ Edit
-                                </button>
+                                    data-id="{{ $prep->id }}">✏️ Edit</button>
+
                                 <button class="btn btn-sm btn-outline-danger rounded-pill delete-prep"
-                                    data-id="{{ $prep->id }}">
-                                    🗑 Delete
-                                </button>
+                                    data-id="{{ $prep->id }}">🗑 Delete</button>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="2" class="text-muted fst-italic">No preps found.</td>
+                            <td colspan="3" class="text-muted fst-italic">No preps found.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+
         </div>
 
     </div>
@@ -66,7 +72,7 @@
     <script>
         $(document).ready(function() {
             //data table
-            
+
 
             // Load Preps list (for after add/edit/delete)
             function loadPreps() {
@@ -156,5 +162,23 @@
             el.focus();
             document.execCommand(command, false, null);
         }
+        $(document).on('change', '.toggle-visibility', function() {
+            let id = $(this).data('id');
+            let status = $(this).is(':checked') ? 1 : 0;
+
+            $.ajax({
+                url: `/preps/${id}/visibility`,
+                method: 'POST',
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    is_visible: status
+                },
+                success: function(res) {
+                    if (res.success) {
+                        console.log("Visibility updated");
+                    }
+                }
+            });
+        });
     </script>
 @endpush

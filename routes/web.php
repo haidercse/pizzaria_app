@@ -139,6 +139,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [PrepsController::class, 'index'])->name('preps.index');
         Route::delete('/{id}', [PrepsController::class, 'destroy'])->name('preps.destroy');
     });
+    // Update Prep Visibility
+    Route::post('/preps/{id}/visibility', [PrepsController::class, 'updateVisibility'])->name('preps.updateVisibility');
 
 
     // Dough Making List Routes

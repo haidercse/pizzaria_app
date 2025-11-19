@@ -10,7 +10,7 @@ class PrepsController extends Controller
 {
     public function index()
     {
-        $preps = Prep::all();
+        $preps = Prep::where('is_visible', 1)->get();
         return view('backend.pages.preps.index', compact('preps'));
     }
     public function list()
@@ -51,6 +51,14 @@ class PrepsController extends Controller
     {
         $prep = Prep::findOrFail($id);
         $prep->delete();
+        return response()->json(['success' => true]);
+    }
+    public function updateVisibility(Request $request, $id)
+    {
+        $prep = Prep::findOrFail($id);
+        $prep->is_visible = $request->is_visible;
+        $prep->save();
+
         return response()->json(['success' => true]);
     }
 }
