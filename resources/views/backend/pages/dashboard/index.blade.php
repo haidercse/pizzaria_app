@@ -14,28 +14,6 @@
 
     <div class="main-content-inner">
 
-        {{-- Dough Stats Cards --}}
-        <div class="sales-report-area mt-5 mb-5">
-            <div class="row g-3">
-                @foreach ($weekDays as $dough)
-                    <div class="col-12 col-sm-6 col-md-4">
-                        <div class="single-report h-100 p-3 shadow-sm rounded" style="border:2px solid rgb(204,229,245);">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h4 class="mb-0">{{ $dough['dough_litter'] ?: '❌' }} L</h4>
-                                <p class="mb-0">{{ $dough['day'] }}</p>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5>{{ $dough['dough_total_weight'] ?: '0' }} kg</h5>
-                                <span>{{ $dough['dough_num_of_cajas'] ?: '0' }} cajas</span>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-        {{-- Dough Stats End --}}
-
-        {{-- Catering Calendar --}}
         <!-- Catering Calendar Start -->
         <div class="row mt-5">
             <div class="col-12">
@@ -76,7 +54,29 @@
         </div>
         <!-- Catering Calendar End -->
 
-        {{-- Catering Calendar End --}}
+        {{-- Dough Stats Cards --}}
+        <div class="sales-report-area mt-5 mb-5">
+            <div class="row g-3">
+                @foreach ($weekDays as $dough)
+                    <div class="col-12 col-sm-6 col-md-4">
+                        <div class="single-report h-100 p-3 shadow-sm rounded"
+                            style="border:2px solid rgb(204,229,245);">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h4 class="mb-0">{{ $dough['dough_litter'] ?: '❌' }} L</h4>
+                                <p class="mb-0">{{ $dough['day'] }}</p>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5>{{ $dough['dough_total_weight'] ?: '0' }} kg</h5>
+                                <span>{{ $dough['dough_num_of_cajas'] ?: '0' }} cajas</span>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        {{-- Dough Stats End --}}
+
+
 
     </div>
 </div>
