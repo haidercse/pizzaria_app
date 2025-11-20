@@ -225,9 +225,14 @@
                                 <span>Preps</span>
                             </a>
                             <ul class="collapse">
-                                <li class=" super-admin-only {{ request()->routeIs('preps.list') ? 'active' : '' }}">
-                                    <a href="{{ route('preps.list') }}">All Preps</a>
-                                </li>
+                                @if (Auth::user()->hasRole('super admin') || Auth::user()->is_superadmin == 1)
+                                    <li
+                                        class=" super-admin-only {{ request()->routeIs('preps.list') ? 'active' : '' }}">
+                                        <a href="{{ route('preps.list') }}">All Preps</a>
+                                    </li>
+                                @endif
+
+
                                 <li class="{{ request()->routeIs('preps.index') ? 'active' : '' }}">
                                     <a href="{{ route('preps.index') }}">Preps List</a>
                                 </li>
