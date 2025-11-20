@@ -59,7 +59,7 @@
                     <tbody>
                         @foreach ($events as $event)
                             <tr id="row-{{ $event->id }}">
-                                <td>{{ $event->event_date }}</td>
+                                <td>{{ \Carbon\Carbon::parse($event->event_date)->format('d F Y') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($event->event_date)->format('l') }}</td>
                                 <td>{{ $event->note }}</td>
                                 <td>

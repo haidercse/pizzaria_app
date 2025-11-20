@@ -38,7 +38,7 @@
                                     <td>{{ $dough->dough_litter }}</td>
                                     <td>{{ $dough->dough_total_weight }}</td>
                                     <td>{{ $dough->dough_num_of_cajas }}</td>
-                                    <td>{{ $dough->date }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($dough->date)->format('d F Y') }}</td>
                                     <td>
                                         <button class="btn btn-sm btn-warning edit-dough" data-id="{{ $dough->id }}"><i
                                                 class="fa fa-edit"></i></button>
@@ -70,6 +70,14 @@
                     <form id="doughForm">
                         @csrf
                         <input type="hidden" id="dough_id" name="id">
+
+                        {{-- Date Field (NEW) --}}
+                        <div class="mb-3 form-group">
+                            <label class="form-label fw-semibold">Select Date</label>
+                            <input type="date" class="form-control" id="dough_date" name="dough_date" required>
+                        </div>
+
+                        {{-- Dough Litter --}}
                         <div class="mb-3 form-group">
                             <label class="form-label fw-semibold">Dough Litter</label>
                             <select name="dough_litter" id="dough_litter" class="form-control">
@@ -82,9 +90,6 @@
                                 <option value="15">15</option>
                                 <option value="16">16</option>
                             </select>
-                            {{-- <input type="number" class="form-control" id="dough_litter" name="dough_litter" min="10"
-                                max="16" required> --}}
-
                         </div>
 
                         <button type="submit" class="btn btn-success w-100" id="saveBtn">Save</button>
@@ -93,6 +98,7 @@
             </div>
         </div>
     </div>
+
 @endsection
 
 @push('scripts')
@@ -120,6 +126,9 @@
                 $('#modalTitle').text("Add Dough");
                 $('#doughForm')[0].reset();
                 $('#dough_id').val('');
+                let today = new Date().toISOString().split('T')[0];
+                $('#dough_date').val(today); // NEW
+
                 $('#saveBtn').removeClass('btn-warning').addClass('btn-success').text("Save");
                 $('#doughModal').modal('show');
             });
@@ -165,6 +174,7 @@
                     $('#modalTitle').text("Edit Dough");
                     $('#dough_id').val(data.id);
                     $('#dough_litter').val(data.dough_litter);
+                    $('#dough_date').val(data.date); // NEW
                     $('#saveBtn').removeClass('btn-success').addClass('btn-warning').text(
                         "Update");
                     $('#doughModal').modal('show');

@@ -10,12 +10,14 @@ use App\Http\Controllers\admin\EmployeeAvailabilityController;
 use App\Http\Controllers\admin\EventController;
 use App\Http\Controllers\admin\HolidayController;
 use App\Http\Controllers\admin\PermissionController;
+use App\Http\Controllers\admin\PizzaDoughController;
 use App\Http\Controllers\admin\PrepsController;
 use App\Http\Controllers\admin\RolePermissionController;
 use App\Http\Controllers\admin\ShiftManagerController;
 use App\Http\Controllers\admin\TaskController;
 use App\Http\Controllers\admin\TestController;
 use App\Http\Controllers\admin\UserController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 
@@ -37,7 +39,8 @@ Route::middleware('auth')->group(function () {
     // Resource Routes
     Route::resource('dough', DoughController::class)->except(['create', 'edit', 'show']);
     Route::get('dough/{id}/get', [DoughController::class, 'getDough'])->name('dough.get');
-
+    Route::get('pizza_dough', [PizzaDoughController::class, 'index'])->name('pizza.dough.index');
+    Route::post('pizza_dough/upload', [PizzaDoughController::class, 'upload'])->name('file.upload');
 
     Route::resource('users', UserController::class);
     Route::post('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset.password');
@@ -169,3 +172,8 @@ Route::middleware('auth')->group(function () {
 
 
 Route::get('/test', [TestController::class, 'index'])->name('test.index');
+
+Route::get('/storage-link', function() {
+    Artisan::call('storage:link');
+    return 'Storage link created';
+});

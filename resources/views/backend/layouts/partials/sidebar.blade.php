@@ -203,14 +203,14 @@
                     </a>
                 </li> --}}
                     <li
-                        class="{{ request()->routeIs('dough.index') || request()->routeIs('dough.edit') ? 'active' : '' }}">
+                        class="{{ request()->routeIs('dough.index') || request()->routeIs('pizza.dough.index') ? 'active' : '' }}">
                         <a href="javascript:void(0)" aria-expanded="true"><span>Dough</span></a>
                         <ul class="collapse">
                             <li class="{{ request()->routeIs('dough.index') ? 'active' : '' }}">
-                                <a href="{{ route('dough.index') }}">Dough Making</a>
-                            </li>
-                            <li class="{{ request()->routeIs('dough.index') ? 'active' : '' }}">
                                 <a href="{{ route('dough.index') }}">Dough Table</a>
+                            </li>
+                            <li class="{{ request()->routeIs('pizza.dough.index') ? 'active' : '' }}">
+                                <a href="{{ route('pizza.dough.index') }}">Pizza Dough</a>
                             </li>
                         </ul>
                     </li>
@@ -252,11 +252,11 @@
                                         <a href="{{ route('users.index') }}">Employee List</a>
                                     </li>
                                 @endif
-                                @if (Auth::user()->can('day_tasks.index') || Auth::user()->hasRole('super admin') || Auth::user()->is_superadmin == 1)
+                                {{-- @if (Auth::user()->can('day_tasks.index') || Auth::user()->hasRole('super admin') || Auth::user()->is_superadmin == 1)
                                     <li class="{{ request()->routeIs('day_tasks.index') ? 'active' : '' }}">
                                         <a href="{{ route('day_tasks.index') }}">Day Tasks</a>
                                     </li>
-                                @endif
+                                @endif --}}
                                 @if (Auth::user()->can('holidays.index') || Auth::user()->hasRole('super admin') || Auth::user()->is_superadmin == 1)
                                     <li class="{{ request()->routeIs('holidays.index') ? 'active' : '' }}">
                                         <a href="{{ route('holidays.index') }}">Holiday</a>

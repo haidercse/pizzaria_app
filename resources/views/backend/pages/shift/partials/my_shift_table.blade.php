@@ -5,7 +5,7 @@
             <th style="width: 15%;">Time</th>
             <th style="width: 15%;">Place</th>
             <th style="width: 25%;">With Whom</th>
-            <th style="width: 30%;">Day Task</th>
+            {{-- <th style="width: 30%;">Day Task</th> --}}
         </tr>
     </thead>
     <tbody>
@@ -62,7 +62,7 @@
                     </td>
 
                     {{-- Day Task --}}
-                    <td>
+                    {{-- <td>
                         @php
                             if ($shift->dayTask) {
                                 $taskName = $shift->dayTask->task_name;
@@ -73,7 +73,7 @@
                             }
                         @endphp
                         <span class="{{ $taskColor }} p-2">{{ $taskName }}</span>
-                    </td>
+                    </td> --}}
                 </tr>
             @endforeach
         @empty

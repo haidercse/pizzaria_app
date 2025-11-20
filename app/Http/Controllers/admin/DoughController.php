@@ -27,10 +27,11 @@ class DoughController extends Controller
     public function store(Request $request)
     {
         try {
-            $today = Carbon::now()->format('Y-m-d');
+            $today = $request->dough_date ?? Carbon::now()->toDateString();
 
             $request->validate([
-                'dough_litter' => 'required|integer|min:10|max:16',
+                'dough_litter' => 'required|integer|min:3|max:16',
+                'dough_date' => 'required|date',
             ]);
 
             // check if already inserted today
@@ -44,11 +45,9 @@ class DoughController extends Controller
 
             $dough = new DoughList();
             $dough->dough_litter = $request->dough_litter;
-
             $this->calculateValues($dough, $request->dough_litter);
-
-            $dough->day = Carbon::now()->format('l');
-            $dough->date = $today;
+            $dough->date = $request->dough_date;
+            $dough->day = Carbon::parse($request->dough_date)->format('l');
             $dough->save();
 
             return response()->json([
@@ -85,11 +84,14 @@ class DoughController extends Controller
     {
         try {
             $request->validate([
-                'dough_litter' => 'required|integer|min:10|max:16',
+                'dough_litter' => 'required|integer|min:3|max:16',
+                'dough_date' => 'required|date',
             ]);
 
             $dough = DoughList::findOrFail($id);
             $dough->dough_litter = $request->dough_litter;
+            $dough->date = $request->dough_date;
+            $dough->day = Carbon::parse($request->dough_date)->format('l');
 
             // calculation logic
             $this->calculateValues($dough, $request->dough_litter);
