@@ -102,9 +102,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/manager', [ShiftManagerController::class, 'index'])->name('shift-manager.index');
     Route::get('/shift-manager/ajax/{date}', [ShiftManagerController::class, 'ajaxLoad'])->name('shift-manager.ajax');
     Route::post('/shift/save', [ShiftManagerController::class, 'save'])->name('shift.save');
+    Route::post('/shift/delete', [ShiftManagerController::class, 'delete'])->name('shift.delete');
+
     Route::get('/shift/view/{employee}', [ShiftManagerController::class, 'view'])->name('shift.view');
     Route::get('/shift/show', [ShiftManagerController::class, 'shiftShow'])->name('shift.show');
     Route::get('/shift/employee', [ShiftManagerController::class, 'employeeShifts'])->name('shift.employee');
+    Route::get('/shift/employee/month', [ShiftManagerController::class, 'employeeShiftsMonth'])->name('shift.employee.month');
+
     Route::get('/availability/history/{id}', [EmployeeAvailabilityController::class, 'history'])
         ->name('shift.history');
     Route::get('/shift/all_shifts', [ShiftManagerController::class, 'allShifts'])->name('all.shifts');
@@ -173,7 +177,7 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/test', [TestController::class, 'index'])->name('test.index');
 
-Route::get('/storage-link', function() {
+Route::get('/storage-link', function () {
     Artisan::call('storage:link');
     return 'Storage link created';
 });
