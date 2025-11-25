@@ -29,6 +29,10 @@
                         <td class="fw-bold sticky-col">{{ $user->name }}</td>
                         @for ($d = 1; $d <= $daysInMonth; $d++)
                             @php
+                                $badgeColors = [
+                                    'andel' => 'bg-warning text-dark', // yellow
+                                    'nusle' => 'bg-danger', // red
+                                ];
                                 $shift = $availabilities[$d] ?? null;
                                 $badgeClass =
                                     $shift && isset($badgeColors[$shift->place])
@@ -36,7 +40,7 @@
                                         : 'bg-info';
                             @endphp
                             <td style="min-width: 120px;">
-                                @if ($shift)
+                                @if ($shift && $shift->start_time && $shift->end_time && $shift->hours > 0)
                                     <div class="badge {{ $badgeClass }} p-2 w-100">
                                         <div>
                                             {{ $shift->start_time ? \Carbon\Carbon::parse($shift->start_time)->format('H:i') : 'N/A' }}
@@ -67,7 +71,8 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ $daysInMonth + 3 }}" class="text-muted">No shifts available for this month.</td>
+                        <td colspan="{{ $daysInMonth + 3 }}" class="text-muted">No shifts available for this month.
+                        </td>
                     </tr>
                 @endforelse
             </tbody>

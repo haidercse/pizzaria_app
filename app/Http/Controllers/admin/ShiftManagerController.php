@@ -98,6 +98,21 @@ class ShiftManagerController extends Controller
             'success' => true
         ]);
     }
+    public function delete(Request $request)
+    {
+        $av = EmployeeAvailability::where('employee_id', $request->employee_id)
+            ->where('date', $request->date)
+            ->first();
+
+        if (!$av) {
+            return response()->json(['success' => false, 'message' => 'No shift found']);
+        }
+
+        $av->delete();
+
+        return response()->json(['success' => true, 'message' => 'Shift deleted successfully']);
+    }
+
 
     public function view($employeeId)
     {
@@ -127,8 +142,14 @@ class ShiftManagerController extends Controller
 
     public function ajaxLoad($date)
     {
-        $users = User::all();
         $selectedDate = $date;
+        $users = User::with(['availabilities' => function ($q) use ($selectedDate) {
+            $q->where('date', $selectedDate);
+        }])
+            ->where('status', 1)
+            ->orderBy('name', 'asc')
+            ->get();
+
 
         foreach ($users as $user) {
             $user->total_hours = $this->calculateTotalHours($user->id, $selectedDate);
@@ -183,11 +204,21 @@ class ShiftManagerController extends Controller
             ->groupBy('date');
 
         // সাপ্তাহিক মোট ঘন্টা
-        $weeklyTotal = $shifts->flatten()->sum('hours');
+        // $weeklyTotal = $shifts->flatten()->sum('hours');
+        $weeklyTotal = $shifts->map(function ($dayShifts) {
+            return $dayShifts->filter(function ($s) {
+                return $s->employee_id == auth()->id() &&
+                    ($s->hours ?? 0) > 0 &&
+                    $s->start_time &&
+                    $s->end_time &&
+                    \Carbon\Carbon::parse($s->start_time)->format('H:i') != '00:00' &&
+                    \Carbon\Carbon::parse($s->end_time)->format('H:i') != '00:00';
+            })->sum('hours');
+        })->sum();
         // সব মাসের জন্য সপ্তাহ ভাগ করা
         $monthStart = \Carbon\Carbon::parse(now()->startOfMonth());
         $weeks = [];
-        for ($i = 0; $i < 4; $i++) {
+        for ($i = 0; $i < 6; $i++) {
             $weekStart = $monthStart->copy()->addDays($i * 7);
             $weekEnd = $weekStart->copy()->addDays(6);
             $weeks[] = [
@@ -206,6 +237,47 @@ class ShiftManagerController extends Controller
 
         return view('backend.pages.shift.my_shift', compact('shifts', 'startDate', 'endDate', 'weeks', 'weeklyTotal', 'monthlyTotal'));
     }
+    //employee shift filter by month
+    // public function employeeShiftsMonth(Request $request)
+    // {
+    //     $month = $request->get('month');
+    //     $monthObj = Carbon::createFromFormat('Y-m', $month);
+
+    //     // Week list generate
+    //     $weeks = [];
+    //     $monthStart = $monthObj->copy()->startOfMonth();
+
+    //     for ($i = 0; $i < 5; $i++) {
+    //         $weekStart = $monthStart->copy()->addDays($i * 7);
+    //         $weekEnd   = $weekStart->copy()->addDays(6);
+    //         $weeks[] = [
+    //             'start' => $weekStart->toDateString(),
+    //             'end'   => $weekEnd->toDateString(),
+    //             'label' => $weekStart->format('d M') . ' - ' . $weekEnd->format('d M'),
+    //         ];
+    //     }
+
+    //     // Default: first week load
+    //     $startDate = $weeks[0]['start'];
+    //     $endDate = Carbon::parse($startDate)->addDays(6)->toDateString();
+
+    //     // get shifts for that week
+    //     $shifts = EmployeeAvailability::with(['employee', 'dayTask'])
+    //         ->whereBetween('date', [$startDate, $endDate])
+    //         ->orderBy('date')
+    //         ->get()
+    //         ->groupBy('date');
+
+    //     $weeklyTotal = $shifts->flatten()->sum('hours');
+
+    //     $monthEnd = $monthObj->copy()->endOfMonth();
+    //     $monthlyTotal = EmployeeAvailability::whereBetween('date', [$monthStart, $monthEnd])->sum('hours');
+
+    //     return response()->json([
+    //         // 'weeks_html' => view('backend.pages.shift.partials.my_shift_table', compact('weeks'))->render(),
+    //         'table_html' => view('backend.pages.shift.partials.my_shift_table', compact('shifts', 'startDate', 'endDate', 'weeklyTotal', 'monthlyTotal'))->render(),
+    //     ]);
+    // }
 
     public function allShifts(Request $request)
     {
@@ -228,7 +300,7 @@ class ShiftManagerController extends Controller
 
         $monthStart = \Carbon\Carbon::parse(now()->startOfMonth());
         $weeks = [];
-        for ($i = 0; $i < 4; $i++) {
+        for ($i = 0; $i < 6; $i++) {
             $weekStart = $monthStart->copy()->addDays($i * 7);
             $weekEnd   = $weekStart->copy()->addDays(6);
             $weeks[] = [

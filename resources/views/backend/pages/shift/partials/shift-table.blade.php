@@ -64,19 +64,39 @@
                 </td>
                 <td class="hours">0</td>
                 <td class="total_hours">{{ $emp->total_hours }}</td>
-<td>
-                            <select name="place" class="form-select place" required>
-                                <option value="nusle" {{ $availability?->place == 'nusle' ? 'selected' : '' }}>Nusle</option>
-                                <option value="andel" {{ $availability?->place == 'andel' ? 'selected' : '' }}>Andel</option>
-                                <option value="event" {{ $availability?->place == 'event' ? 'selected' : '' }}>Event</option>
-                            </select>
-                        </td>
                 <td>
-                    <button class="btn btn-sm btn-success save-shift" data-id="{{ $emp->id }}">Save</button>
-                    <button class="btn btn-sm btn-info view-shift" data-id="{{ $emp->id }}"
-                        data-date="{{ $selectedDate }}">View</button>
+                    <select name="place" class="form-select place" required>
+                        <option value="nusle" {{ $availability?->place == 'nusle' ? 'selected' : '' }}>Nusle</option>
+                        <option value="andel" {{ $availability?->place == 'andel' ? 'selected' : '' }}>Andel</option>
+                        <option value="event" {{ $availability?->place == 'event' ? 'selected' : '' }}>Event</option>
+                    </select>
+                </td>
+                <td>
+                    {{-- <button class="btn btn-sm btn-success save-shift" data-id="{{ $emp->id }}">Update</button> --}}
+                    <button class="btn btn-sm btn-danger delete-shift" data-id="{{ $emp->id }}"
+                        data-date="{{ $selectedDate }}">Delete</button>
+                    {{-- <button class="btn btn-sm btn-info view-shift" data-id="{{ $emp->id }}"
+                        data-date="{{ $selectedDate }}">View</button> --}}
                 </td>
             </tr>
         @endforeach
     </tbody>
 </table>
+<script>
+    $(document).ready(function() {
+        function highlightAssignedRows() {
+            $('#shiftTable tbody tr').each(function() {
+                let row = $(this);
+                let start = row.find('.start-time').val();
+                let end = row.find('.end-time').val();
+
+                if (start !== "00:00" || end !== "00:00") {
+                    row.css('background-color', '#d4edda'); // Light green
+                } else {
+                    row.css('background-color', ''); // Normal
+                }
+            });
+        }
+        highlightAssignedRows();
+    })
+</script>

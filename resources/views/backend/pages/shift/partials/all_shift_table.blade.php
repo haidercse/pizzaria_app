@@ -5,73 +5,76 @@
             <th>Time</th>
             <th>Place</th>
             <th>Employee</th>
-            <th>Day Task</th>
+            {{-- <th>Day Task</th> --}}
         </tr>
     </thead>
     <tbody>
         @forelse ($shifts as $date => $dayShifts)
-            @foreach ($dayShifts as $index => $shift)
-                <tr>
-                    @if ($index === 0)
-                        <td rowspan="{{ count($dayShifts) }}" class="fw-bold align-middle">
-                            {{ \Carbon\Carbon::parse($date)->format('l, d M Y') }}
-                        </td>
-                    @endif
 
+            @php
+                // Group shifts by place (andel, nusle, event etc)
+                $placeGroups = $dayShifts->groupBy('place');
+            @endphp
+
+            @foreach ($placeGroups as $place => $placeShifts)
+                <tr>
+                    {{-- Date column – only 1 time per date --}}
                     <td>
-                        {{ $shift->start_time ? \Carbon\Carbon::parse($shift->start_time)->format('H:i') : 'N/A' }}
-                        -
-                        {{ $shift->end_time ? \Carbon\Carbon::parse($shift->end_time)->format('H:i') : 'N/A' }}
-                        <br>
-                        <small class="text-muted">({{ $shift->hours ?? 0 }}h)</small>
+                        {{ \Carbon\Carbon::parse($date)->format('l, d M Y') }}
                     </td>
 
+                    {{-- Time column – show combined time range --}}
+                    @php
+                        // Show first shift time range; or combine as you like
+                        $first = $placeShifts->first();
+                    @endphp
+                    <td>
+                        {{ \Carbon\Carbon::parse($first->start_time)->format('H:i') }}
+                        -
+                        {{ \Carbon\Carbon::parse($first->end_time)->format('H:i') }}
+                        <br>
+                        <small class="text-muted">
+                            ({{ $placeShifts->sum('hours') }}h)
+                        </small>
+                    </td>
+
+                    {{-- Place --}}
                     <td>
                         @php
-                            $color = $badgeColors[$shift->place] ?? 'bg-secondary';
+                            $badgeColors = [
+                                'andel' => 'bg-warning text-dark',
+                                'nusle' => 'bg-danger',
+                                'event' => 'bg-info text-dark',
+                            ];
+                            $color = $badgeColors[$place] ?? 'bg-secondary';
                         @endphp
+
                         <span class="badge {{ $color }} p-2">
-                            {{ ucfirst($shift->place ?? 'N/A') }}
+                            {{ ucfirst($place) }}
                         </span>
                     </td>
 
-                    {{-- With Whom --}}
+                    {{-- Employee List --}}
                     <td>
-                        @php
-                            // ওই দিনের সব availability collect করে একসাথে দেখানোর জন্য
-                            $availabilities = $dayShifts->where('place', $shift->place);
-                        @endphp
-
-                        @if ($availabilities->count() > 0)
-                            @foreach ($availabilities as $av)
-                                {{ $av->employee->name }}
-                                ({{ $av->start_time ? \Carbon\Carbon::parse($av->start_time)->format('H:i') : 'N/A' }}
-                                -
-                                {{ $av->end_time ? \Carbon\Carbon::parse($av->end_time)->format('H:i') : 'N/A' }})
-                                @if (!$loop->last)
-                                    ,
-                                @endif
-                            @endforeach
-                        @else
-                            <span class="text-muted">No Employee</span>
-                        @endif
-                    </td>
-
-
-                    <td>
-                        @php
-                            $taskName = $shift->dayTask->task_name ?? 'No Task Assigned';
-                            $taskColor = $shift->dayTask ? 'badge bg-warning' : '';
-                        @endphp
-                        <span class="{{ $taskColor }} p-2">{{ $taskName }}</span>
+                        @foreach ($placeShifts as $shift)
+                            {{ $shift->employee->name }}
+                            ({{ \Carbon\Carbon::parse($shift->start_time)->format('H:i') }}
+                            -
+                            {{ \Carbon\Carbon::parse($shift->end_time)->format('H:i') }})
+                            @if (!$loop->last)
+                                ,
+                            @endif
+                        @endforeach
                     </td>
                 </tr>
             @endforeach
+
         @empty
             <tr>
                 <td colspan="5" class="text-muted text-center">No shifts found</td>
             </tr>
         @endforelse
+
 
         <tr>
             <td colspan="5" class="text-muted text-center fw-bold">

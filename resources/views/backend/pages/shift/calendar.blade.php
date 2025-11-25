@@ -111,9 +111,12 @@
                             </select>
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-success save-shift" data-id="{{ $emp->id }}">Save</button>
-                            <button class="btn btn-sm btn-info view-shift" data-id="{{ $emp->id }}"
-                                data-date="{{ $selectedDate }}">View</button>
+                            {{-- <button class="btn btn-sm btn-success save-shift" data-id="{{ $emp->id }}">Update</button> --}}
+                            <button class="btn btn-sm btn-danger delete-shift"
+                                data-id="{{ $emp->id }}">Delete</button>
+
+                            {{-- <button class="btn btn-sm btn-info view-shift" data-id="{{ $emp->id }}"
+                                data-date="{{ $selectedDate }}">View</button> --}}
                         </td>
                     </tr>
                 @endforeach
@@ -198,10 +201,13 @@
             }
 
             // Update hours when start or end time changes
-            $(document).on('change', '#shiftTable .start-time, #shiftTable .end-time', function() {
+            $(document).on('change', '#shiftTable .start-time, #shiftTable .end-time, #shiftTable .place',
+            function() {
                 let row = $(this).closest('tr');
                 updateHoursForRow(row);
+                row.find('.save-shift').trigger('click');
             });
+
 
             // Calculate hours for a specific row
             function updateHoursForRow(row) {
@@ -226,7 +232,7 @@
                 }
             }
 
-            // Save shift
+
             $(document).on('click', '.save-shift', function() {
                 let row = $(this).closest('tr');
                 let employeeId = $(this).data('id');
@@ -263,7 +269,7 @@
                             row.find('.end-time').val(res.end_time);
                             row.find('.place').val(res.place);
 
-                            alert(res.message);
+                            // alert(res.message);
                         } else {
                             alert(res.message);
                         }
@@ -274,23 +280,51 @@
                     }
                 });
             });
+            // Delete shift
+            $(document).on('click', '.delete-shift', function() {
+                if (!confirm("Are you sure you want to delete this shift?")) return;
 
-            // View shift with modal
-            $(document).on('click', '.view-shift', function() {
-                let empId = $(this).data('id');
-                let date = $(this).data('date');
+                let employeeId = $(this).data('id');
+                let date = $('#shiftTable').data('date');
 
-                $('#shiftModal').modal('show');
-                $('#shiftModalBody').html(
-                    '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>'
-                );
-
-                $.get("{{ url('shift/view') }}/" + empId + "?date=" + date, function(data) {
-                    $('#shiftModalBody').html(data);
-                }).fail(function(xhr, status, error) {
-                    $('#shiftModalBody').html('<div class="text-danger">Error loading data.</div>');
+                $.ajax({
+                    url: "{{ route('shift.delete') }}",
+                    method: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        employee_id: employeeId,
+                        date: date
+                    },
+                    success: function(res) {
+                        if (res.success) {
+                            alert(res.message);
+                            window.loadShifts(date); // refresh table
+                        } else {
+                            alert(res.message);
+                        }
+                    },
+                    error: function() {
+                        alert("Error deleting shift.");
+                    }
                 });
             });
+
+            // View shift with modal
+            // $(document).on('click', '.view-shift', function() {
+            //     let empId = $(this).data('id');
+            //     let date = $(this).data('date');
+
+            //     $('#shiftModal').modal('show');
+            //     $('#shiftModalBody').html(
+            //         '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>'
+            //     );
+
+            //     //  $.get("{{ url('shift/view') }}/" + empId + "?date=" + date, function(data) {
+            //     //     $('#shiftModalBody').html(data);
+            //     // }).fail(function(xhr, status, error) {
+            //     //     $('#shiftModalBody').html('<div class="text-danger">Error loading data.</div>');
+            //     // });
+            // });
 
             // Search
             $('#searchUser').on('keyup', function() {
@@ -305,11 +339,24 @@
                 window.location.href = '{{ route('shift-manager.index') }}?month=' + month;
             });
 
+            function highlightAssignedRows() {
+                $('#shiftTable tbody tr').each(function() {
+                    let row = $(this);
+                    let start = row.find('.start-time').val();
+                    let end = row.find('.end-time').val();
+
+                    if (start !== "00:00" || end !== "00:00") {
+                        row.css('background-color', '#d4edda'); // Light green
+                    } else {
+                        row.css('background-color', ''); // Normal
+                    }
+                });
+            }
+
+
             // Initial hours calculation
             updateHours();
+            highlightAssignedRows();
         });
     </script>
 @endpush
-
-
-
