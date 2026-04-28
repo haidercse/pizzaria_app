@@ -90,10 +90,10 @@
                                 </div>
                             </div>
 
-                            <div class="mb-3">
+                            {{-- <div class="mb-3">
                                 <label class="form-label fw-bold">Note (optional)</label>
                                 <textarea name="note" class="form-control" rows="3">{{ $availability->note }}</textarea>
-                            </div>
+                            </div> --}}
 
                             <button type="submit" class="btn btn-primary w-100">Save Availability</button>
                         </form>

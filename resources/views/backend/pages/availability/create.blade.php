@@ -20,7 +20,7 @@
                                     <th>Preferred Time</th>
                                     <th>Start Time</th>
                                     <th>End Time</th>
-                                    <th>Note</th>
+                                    {{-- <th>Note</th> --}}
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -59,8 +59,9 @@
                                             @endfor
                                         </select>
                                     </td>
-                                    <td><input type="text" name="note[]" class="form-control" placeholder="Optional">
-                                    </td>
+                                    {{-- <td>
+                                        <input type="text" name="note[]" class="form-control" placeholder="Optional">
+                                    </td> --}}
                                     <td><button type="button" class="btn btn-danger btn-sm removeRow">✖</button></td>
                                 </tr>
                             </tbody>

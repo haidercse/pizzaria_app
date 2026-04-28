@@ -127,41 +127,66 @@ class CheckoutController extends Controller
             'contract'
         ])->get();
 
-        // holiday list নিলাম
         $holidays = Holiday::pluck('date')->toArray();
 
         $dailyTotals = [];
+
         foreach ($users as $user) {
-            $userSalary = 0;
+
+            $nusleHours = 0;
+            $andelHours = 0;
+
+            $nusleSalary = 0;
+            $andelSalary = 0;
 
             foreach ($user->checkouts as $checkout) {
+
                 $rate = $user->contract->hourly_rate ?? 0;
                 $dayOfWeek = \Carbon\Carbon::parse($checkout->date)->format('l');
                 $isHoliday = in_array($checkout->date, $holidays);
 
+                // multiplier
                 if ($isHoliday) {
-                    // Holiday → 30% extra
-                    $userSalary += $checkout->worked_hours * $rate * 1.2;
+                    $multiplier = 1.2;
                 } elseif (in_array($dayOfWeek, ['Saturday', 'Sunday'])) {
-                    // Weekend → 10% extra
-                    $userSalary += $checkout->worked_hours * $rate * 1.1;
+                    $multiplier = 1;
                 } else {
-                    // Normal
-                    $userSalary += $checkout->worked_hours * $rate;
+                    $multiplier = 1;
                 }
 
-                // daily totals হিসাব আগের মতো
+                $amount = $checkout->worked_hours * $rate * $multiplier;
+
+                // 🔥 branch wise calculation
+                if ($checkout->place === 'nusle') {
+                    $nusleHours += $checkout->worked_hours;
+                    $nusleSalary += $amount;
+                }
+
+                if ($checkout->place === 'andel') {
+                    $andelHours += $checkout->worked_hours;
+                    $andelSalary += $amount;
+                }
+
+                // daily totals
                 $day = \Carbon\Carbon::parse($checkout->date)->day;
                 $dailyTotals[$day] = ($dailyTotals[$day] ?? 0) + $checkout->worked_hours;
             }
 
-            // এখানে salary attach করলাম
-            $user->calculated_salary = $userSalary;
-            $user->monthly_total_hours = $user->checkouts->sum('worked_hours');
+            // attach data
+            $user->nusle_hours = $nusleHours;
+            $user->andel_hours = $andelHours;
+
+            $user->nusle_salary = $nusleSalary;
+            $user->andel_salary = $andelSalary;
+
+            $user->monthly_total_hours = $nusleHours + $andelHours;
+            $user->calculated_salary = $nusleSalary + $andelSalary;
         }
+
         $users = $users->filter(function ($u) {
             return ($u->monthly_total_hours ?? 0) > 0;
         });
+
         $totalHoursAllUsers = array_sum($dailyTotals);
 
         $badgeColors = [
