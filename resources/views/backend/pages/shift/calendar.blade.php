@@ -111,7 +111,8 @@
                             </select>
                         </td>
                         <td>
-                            {{-- <button class="btn btn-sm btn-success save-shift" data-id="{{ $emp->id }}">Update</button> --}}
+                            <button style="display: none" class="btn btn-sm btn-success save-shift"
+                                data-id="{{ $emp->id }}">Update</button>
                             <button class="btn btn-sm btn-danger delete-shift"
                                 data-id="{{ $emp->id }}">Delete</button>
 
@@ -202,11 +203,11 @@
 
             // Update hours when start or end time changes
             $(document).on('change', '#shiftTable .start-time, #shiftTable .end-time, #shiftTable .place',
-            function() {
-                let row = $(this).closest('tr');
-                updateHoursForRow(row);
-                row.find('.save-shift').trigger('click');
-            });
+                function() {
+                    let row = $(this).closest('tr');
+                    updateHoursForRow(row);
+                    row.find('.save-shift').trigger('click');
+                });
 
 
             // Calculate hours for a specific row

@@ -72,7 +72,8 @@
                     </select>
                 </td>
                 <td>
-                    {{-- <button class="btn btn-sm btn-success save-shift" data-id="{{ $emp->id }}">Update</button> --}}
+                    <button style="display:none " class="btn btn-sm btn-success save-shift"
+                        data-id="{{ $emp->id }}">Update</button>
                     <button class="btn btn-sm btn-danger delete-shift" data-id="{{ $emp->id }}"
                         data-date="{{ $selectedDate }}">Delete</button>
                     {{-- <button class="btn btn-sm btn-info view-shift" data-id="{{ $emp->id }}"
