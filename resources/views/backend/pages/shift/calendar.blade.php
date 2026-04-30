@@ -9,6 +9,9 @@
             <input type="month" id="monthFilter" class="form-control" value="{{ $selectedMonth }}">
             <input type="hidden" id="selectedMonth" value="{{ $selectedMonth }}">
         </div>
+        <div class="mb-3">
+            <div id="weekButtons" class="d-flex flex-wrap gap-2"></div>
+        </div>
         @php
 
             $startOfMonth = \Carbon\Carbon::parse($selectedMonth . '-01');
@@ -42,6 +45,7 @@
                     <th>Preferred Time</th>
                     <th>Start</th>
                     <th>End</th>
+                    <th>Predefined Shift</th>
                     <th>Employee Assigned Time</th>
                     <th>Hours</th>
                     <th>Total Hours</th>
@@ -88,6 +92,16 @@
                                         </option>
                                     @endfor
                                 @endfor
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-select predefined-shift">
+                                <option value="">Select Shift</option>
+                                <option value="16:00-22:00">16:00 - 22:00</option>
+                                <option value="15:00-22:00">15:00 - 22:00</option>
+                                <option value="10:30-22:00">10:30 - 22:00</option>
+                                <option value="11:00-22:00">11:00 - 22:00</option>
+                                <option value="11:30-22:00">11:30 - 22:00</option>
                             </select>
                         </td>
                         <td class="assigned-time">
@@ -139,78 +153,90 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="weekModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Weekly Overview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3 text-center">
+                        <button class="btn btn-success branch-btn" data-branch="nusle">Nusle</button>
+                        <button class="btn btn-warning branch-btn" data-branch="andel">Andel</button>
+                    </div>
+
+                    <div id="weekOverviewContent">
+                        <div class="text-center">Select branch...</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
     <script>
         $(document).ready(function() {
+
+            // 🔥 IMPORTANT: moment.js check
+            if (typeof moment === 'undefined') {
+                console.error('Moment.js not loaded!');
+            }
+
+            let selectedMonth = $('#selectedMonth').val();
+            generateWeekButtons(selectedMonth);
+
+            // =============================
             // Load shifts for a specific date
+            // =============================
             window.loadShifts = function(date) {
                 $('.date-badge').removeClass('bg-warning text-dark').addClass('bg-secondary');
                 $(`.date-badge[data-date="${date}"]`).removeClass('bg-secondary').addClass(
                     'bg-warning text-dark');
 
                 $('#shiftTable').html(`
-                    <tbody>
-                        <tr>
-                            <td colspan="8" class="text-center">
-                                <div class="spinner-border text-primary"></div>
-                                Loading shifts...
-                            </td>
-                        </tr>
-                    </tbody>
-                `);
+                <tbody>
+                    <tr>
+                        <td colspan="8" class="text-center">
+                            <div class="spinner-border text-primary"></div>
+                            Loading shifts...
+                        </td>
+                    </tr>
+                </tbody>
+            `);
 
                 $.get("{{ url('shift-manager/ajax') }}/" + date, function(data) {
                     $('#shiftTable').replaceWith(data);
                     updateHours();
-                }).fail(function(xhr, status, error) {
+                }).fail(function() {
                     $('#shiftTable').html(`
-                        <tbody>
-                            <tr>
-                                <td colspan="8" class="text-center text-danger">Error loading shifts</td>
-                            </tr>
-                        </tbody>
-                    `);
+                    <tbody>
+                        <tr>
+                            <td colspan="8" class="text-center text-danger">Error loading shifts</td>
+                        </tr>
+                    </tbody>
+                `);
                 });
             };
 
-            // Calculate hours for a row
+            // =============================
+            // Hours calculation (ALL rows)
+            // =============================
             function updateHours() {
                 $('#shiftTable tbody tr').each(function() {
-                    let row = $(this);
-                    let startTime = row.find('.start-time').val();
-                    let endTime = row.find('.end-time').val();
-                    let hoursCell = row.find('.hours');
-
-                    if (startTime && endTime) {
-                        let [sh, sm] = startTime.split(':').map(Number);
-                        let [eh, em] = endTime.split(':').map(Number);
-
-                        let startMinutes = sh * 60 + sm;
-                        let endMinutes = eh * 60 + em;
-
-                        let diffMinutes = endMinutes - startMinutes;
-                        if (diffMinutes < 0) diffMinutes += 24 * 60; // Handle overnight shifts
-
-                        let hours = (diffMinutes / 60).toFixed(2);
-                        hoursCell.text(hours);
-                    } else {
-                        hoursCell.text('0');
-                    }
+                    updateHoursForRow($(this));
                 });
             }
 
-            // Update hours when start or end time changes
-            $(document).on('change', '#shiftTable .start-time, #shiftTable .end-time, #shiftTable .place',
-                function() {
-                    let row = $(this).closest('tr');
-                    updateHoursForRow(row);
-                    row.find('.save-shift').trigger('click');
-                });
-
-
-            // Calculate hours for a specific row
+            // =============================
+            // Single row hours calculation
+            // =============================
             function updateHoursForRow(row) {
                 let startTime = row.find('.start-time').val();
                 let endTime = row.find('.end-time').val();
@@ -224,7 +250,7 @@
                     let endMinutes = eh * 60 + em;
 
                     let diffMinutes = endMinutes - startMinutes;
-                    if (diffMinutes < 0) diffMinutes += 24 * 60; // Handle overnight shifts
+                    if (diffMinutes < 0) diffMinutes += 24 * 60;
 
                     let hours = (diffMinutes / 60).toFixed(2);
                     hoursCell.text(hours);
@@ -233,30 +259,36 @@
                 }
             }
 
+            // =============================
+            // Change trigger (auto save)
+            // =============================
+            $(document).on('change', '#shiftTable .start-time, #shiftTable .end-time, #shiftTable .place',
+                function() {
+                    let row = $(this).closest('tr');
+                    updateHoursForRow(row);
+                    row.find('.save-shift').trigger('click');
+                });
 
+            // =============================
+            // Save shift
+            // =============================
             $(document).on('click', '.save-shift', function() {
                 let row = $(this).closest('tr');
                 let employeeId = $(this).data('id');
-                let start = row.find('.start-time').val();
-                let end = row.find('.end-time').val();
-                let preferred = row.find('td:nth-child(2)').text();
-                let hours = row.find('.hours').text();
-                let date = row.closest('table').data('date');
-                let place = row.find('.place').val();
-                let month = $('#selectedMonth').val();
+
                 $.ajax({
                     url: "{{ route('shift.save') }}",
                     method: "POST",
                     data: {
                         _token: "{{ csrf_token() }}",
                         employee_id: employeeId,
-                        start_time: start,
-                        end_time: end,
-                        preferred_time: preferred,
-                        hours: hours,
-                        date: date,
-                        place: place,
-                        selected_month: month
+                        start_time: row.find('.start-time').val(),
+                        end_time: row.find('.end-time').val(),
+                        preferred_time: row.find('td:nth-child(2)').text(),
+                        hours: row.find('.hours').text(),
+                        date: row.closest('table').data('date'),
+                        place: row.find('.place').val(),
+                        selected_month: $('#selectedMonth').val()
                     },
                     success: function(res) {
                         if (res.success) {
@@ -264,70 +296,53 @@
                             row.find('.total-hours').text(res.total_hours);
                             row.find('.assigned-time').text(res.user_start_time + ' - ' + res
                                 .user_end_time);
-
-                            // ✅ Select option ke selected kore dao
                             row.find('.start-time').val(res.start_time);
                             row.find('.end-time').val(res.end_time);
                             row.find('.place').val(res.place);
-
-                            // alert(res.message);
-                        } else {
-                            alert(res.message);
                         }
-                    },
-
-                    error: function(xhr) {
-                        alert('Error saving shift: ' + xhr.responseJSON.message);
                     }
                 });
             });
+
+            // =============================
             // Delete shift
+            // =============================
             $(document).on('click', '.delete-shift', function() {
-                if (!confirm("Are you sure you want to delete this shift?")) return;
+                if (!confirm("Are you sure?")) return;
 
-                let employeeId = $(this).data('id');
-                let date = $('#shiftTable').data('date');
-
-                $.ajax({
-                    url: "{{ route('shift.delete') }}",
-                    method: "POST",
-                    data: {
-                        _token: "{{ csrf_token() }}",
-                        employee_id: employeeId,
-                        date: date
-                    },
-                    success: function(res) {
-                        if (res.success) {
-                            alert(res.message);
-                            window.loadShifts(date); // refresh table
-                        } else {
-                            alert(res.message);
-                        }
-                    },
-                    error: function() {
-                        alert("Error deleting shift.");
+                $.post("{{ route('shift.delete') }}", {
+                    _token: "{{ csrf_token() }}",
+                    employee_id: $(this).data('id'),
+                    date: $('#shiftTable').data('date')
+                }, function(res) {
+                    if (res.success) {
+                        alert(res.message);
+                        loadShifts($('#shiftTable').data('date'));
                     }
                 });
             });
 
-            // View shift with modal
-            // $(document).on('click', '.view-shift', function() {
-            //     let empId = $(this).data('id');
-            //     let date = $(this).data('date');
+            // =============================
+            // Predefined shift
+            // =============================
+            $(document).on('change', '.predefined-shift', function() {
+                let row = $(this).closest('tr');
+                let value = $(this).val();
 
-            //     $('#shiftModal').modal('show');
-            //     $('#shiftModalBody').html(
-            //         '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>'
-            //     );
+                if (value) {
+                    let [start, end] = value.split('-');
 
-            //     //  $.get("{{ url('shift/view') }}/" + empId + "?date=" + date, function(data) {
-            //     //     $('#shiftModalBody').html(data);
-            //     // }).fail(function(xhr, status, error) {
-            //     //     $('#shiftModalBody').html('<div class="text-danger">Error loading data.</div>');
-            //     // });
-            // });
+                    row.find('.start-time').val(start);
+                    row.find('.end-time').val(end);
 
+                    updateHoursForRow(row);
+                    row.find('.save-shift').trigger('click');
+                }
+            });
+
+            // =============================
             // Search
+            // =============================
             $('#searchUser').on('keyup', function() {
                 let value = $(this).val().toLowerCase();
                 $("#shiftTable tbody tr").filter(function() {
@@ -335,11 +350,17 @@
                 });
             });
 
+            // =============================
+            // Month change
+            // =============================
             $('#monthFilter').on('change', function() {
-                let month = $(this).val(); // e.g., "2025-09"
+                let month = $(this).val();
                 window.location.href = '{{ route('shift-manager.index') }}?month=' + month;
             });
 
+            // =============================
+            // Highlight rows
+            // =============================
             function highlightAssignedRows() {
                 $('#shiftTable tbody tr').each(function() {
                     let row = $(this);
@@ -347,17 +368,87 @@
                     let end = row.find('.end-time').val();
 
                     if (start !== "00:00" || end !== "00:00") {
-                        row.css('background-color', '#d4edda'); // Light green
+                        row.css('background-color', '#d4edda');
                     } else {
-                        row.css('background-color', ''); // Normal
+                        row.css('background-color', '');
                     }
                 });
             }
 
-
-            // Initial hours calculation
             updateHours();
             highlightAssignedRows();
+
+            // =============================
+            // WEEK BUTTON CLICK
+            // =============================
+            let selectedWeek = {
+                start: null,
+                end: null
+            };
+
+            $(document).on('click', '.week-btn', function() {
+                selectedWeek.start = $(this).data('start');
+                selectedWeek.end = $(this).data('end');
+
+                $('#weekModal').modal('show');
+            });
+
+            // =============================
+            // Branch click
+            // =============================
+            $(document).on('click', '.branch-btn', function() {
+
+                if (!selectedWeek.start || !selectedWeek.end) {
+                    alert('Please select a week first!');
+                    return;
+                }
+
+                let branch = $(this).data('branch');
+
+                $('#weekOverviewContent').html('<div class="spinner-border"></div>');
+
+                $.get("{{ route('shift.week.overview') }}", {
+                    start_date: selectedWeek.start,
+                    end_date: selectedWeek.end,
+                    branch: branch
+                }, function(res) {
+                    $('#weekOverviewContent').html(res);
+                });
+            });
+
         });
+
+        // =============================
+        // Generate week buttons
+        // =============================
+        function generateWeekButtons(month) {
+            let start = moment(month + "-01").startOf('month');
+            let end = moment(month + "-01").endOf('month');
+
+            let container = $('#weekButtons');
+            container.empty();
+
+            let current = start.clone().startOf('week').add(1, 'day');
+
+            let weekIndex = 1;
+
+            while (current.isBefore(end)) {
+                let weekStart = current.clone();
+                let weekEnd = current.clone().add(6, 'days');
+
+                let label = weekStart.format('DD MMM') + ' - ' + weekEnd.format('DD MMM');
+
+                container.append(`
+                <button class="btn btn-sm btn-primary week-btn"
+                    data-start="${weekStart.format('YYYY-MM-DD')}"
+                    data-end="${weekEnd.format('YYYY-MM-DD')}">
+                    Week ${weekIndex}<br>${label}
+                </button>
+            `);
+
+                current.add(7, 'days');
+                weekIndex++;
+            }
+        }
     </script>
 @endpush

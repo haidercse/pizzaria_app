@@ -5,6 +5,7 @@
             <th>Preferred Time</th>
             <th>Start</th>
             <th>End</th>
+            <th>Predefined Shift</th>
             <th>Assigned Time (Start to End)</th>
             <th>Hours</th>
             <th>Total Hours</th>
@@ -53,6 +54,16 @@
                                 </option>
                             @endfor
                         @endfor
+                    </select>
+                </td>
+                <td>
+                    <select class="form-select predefined-shift">
+                        <option value="">Select Shift</option>
+                        <option value="16:00-22:00">16:00 - 22:00</option>
+                        <option value="15:00-22:00">15:00 - 22:00</option>
+                        <option value="10:30-22:00">10:30 - 22:00</option>
+                        <option value="11:00-22:00">11:00 - 22:00</option>
+                        <option value="11:30-22:00">11:30 - 22:00</option>
                     </select>
                 </td>
                 <td class="assigned-time">

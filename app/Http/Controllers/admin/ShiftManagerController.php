@@ -19,9 +19,11 @@ class ShiftManagerController extends Controller
         $selectedDate = $request->get('date', $selectedMonth . '-01');
 
         // Users & total_hours load
-        $users = User::with(['availabilities' => function ($q) use ($selectedDate) {
-            $q->where('date', $selectedDate);
-        }])
+        $users = User::with([
+            'availabilities' => function ($q) use ($selectedDate) {
+                $q->where('date', $selectedDate);
+            }
+        ])
             ->where('status', 1)
             ->orderBy('name', 'asc')
             ->get();
@@ -143,9 +145,11 @@ class ShiftManagerController extends Controller
     public function ajaxLoad($date)
     {
         $selectedDate = $date;
-        $users = User::with(['availabilities' => function ($q) use ($selectedDate) {
-            $q->where('date', $selectedDate);
-        }])
+        $users = User::with([
+            'availabilities' => function ($q) use ($selectedDate) {
+                $q->where('date', $selectedDate);
+            }
+        ])
             ->where('status', 1)
             ->orderBy('name', 'asc')
             ->get();
@@ -166,10 +170,12 @@ class ShiftManagerController extends Controller
         $startOfMonth = \Carbon\Carbon::parse($selectedMonth . '-01');
         $daysInMonth = $startOfMonth->daysInMonth;
 
-        $users = \App\Models\User::with(['availabilities' => function ($q) use ($startOfMonth) {
-            $q->whereYear('date', $startOfMonth->year)
-                ->whereMonth('date', $startOfMonth->month);
-        }])->get();
+        $users = \App\Models\User::with([
+            'availabilities' => function ($q) use ($startOfMonth) {
+                $q->whereYear('date', $startOfMonth->year)
+                    ->whereMonth('date', $startOfMonth->month);
+            }
+        ])->get();
 
         // Daily totals
         $dailyTotals = [];
@@ -223,7 +229,7 @@ class ShiftManagerController extends Controller
             $weekEnd = $weekStart->copy()->addDays(6);
             $weeks[] = [
                 'start' => $weekStart->toDateString(),
-                'end'   => $weekEnd->toDateString(),
+                'end' => $weekEnd->toDateString(),
                 'label' => $weekStart->format('d M') . ' - ' . $weekEnd->format('d M'),
             ];
         }
@@ -282,7 +288,7 @@ class ShiftManagerController extends Controller
     public function allShifts(Request $request)
     {
         $startDate = $request->get('start_date', now()->startOfMonth()->toDateString());
-        $endDate   = \Carbon\Carbon::parse($startDate)->addDays(6)->toDateString();
+        $endDate = \Carbon\Carbon::parse($startDate)->addDays(6)->toDateString();
 
         $placeFilter = $request->get('place'); // filter by place
 
@@ -302,10 +308,10 @@ class ShiftManagerController extends Controller
         $weeks = [];
         for ($i = 0; $i < 6; $i++) {
             $weekStart = $monthStart->copy()->addDays($i * 7);
-            $weekEnd   = $weekStart->copy()->addDays(6);
+            $weekEnd = $weekStart->copy()->addDays(6);
             $weeks[] = [
                 'start' => $weekStart->toDateString(),
-                'end'   => $weekEnd->toDateString(),
+                'end' => $weekEnd->toDateString(),
                 'label' => $weekStart->format('d M') . ' - ' . $weekEnd->format('d M'),
             ];
         }
@@ -331,5 +337,51 @@ class ShiftManagerController extends Controller
             'weeklyTotal',
             'monthlyTotal'
         ));
+    }
+
+    public function weekOverview(Request $request)
+    {
+        $start = $request->start_date;
+        $end = $request->end_date;
+        $branch = $request->branch;
+
+        // 🔹 Get all shifts once
+        $allShifts = EmployeeAvailability::with('employee')
+            ->whereBetween('date', [$start, $end])
+            ->get();
+
+        // 🔹 Filtered shifts (for UI cards)
+        $filteredShifts = $allShifts
+            ->when($branch, function ($collection) use ($branch) {
+                return $collection->where('place', $branch);
+            })
+            ->groupBy('date');
+
+        // 🔹 Branch ভিত্তিক hours
+        $hoursPerWeek = $allShifts
+            ->where('place', $branch)
+            ->groupBy(function ($item) {
+                return optional($item->employee)->name ?? 'Unknown';
+            })
+            ->map(fn($items) => round($items->sum('hours'), 2));
+
+        // 🔹 Total (both branch)
+        $totalHoursPerWeek = $allShifts
+            ->groupBy(function ($item) {
+                return optional($item->employee)->name ?? 'Unknown';
+            })
+            ->map(fn($items) => round($items->sum('hours'), 2));
+
+        // 🔹 Total week hours
+        $totalWeekHours = round($allShifts->sum('hours'), 2);
+
+        return view('backend.pages.shift.partials.week_overview_table', [
+            'shifts' => $filteredShifts,
+            'start' => $start,
+            'end' => $end,
+            'totalWeekHours' => $totalWeekHours,
+            'hoursPerWeek' => $hoursPerWeek,
+            'totalHoursPerWeek' => $totalHoursPerWeek,
+        ]);
     }
 }

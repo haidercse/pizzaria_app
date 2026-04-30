@@ -100,6 +100,8 @@ Route::middleware('auth')->group(function () {
     // Shift Manager Routes
 
     Route::get('/manager', [ShiftManagerController::class, 'index'])->name('shift-manager.index');
+    Route::get('/shift-manager/week-overview', [ShiftManagerController::class, 'weekOverview'])
+        ->name('shift.week.overview');
     Route::get('/shift-manager/ajax/{date}', [ShiftManagerController::class, 'ajaxLoad'])->name('shift-manager.ajax');
     Route::post('/shift/save', [ShiftManagerController::class, 'save'])->name('shift.save');
     Route::post('/shift/delete', [ShiftManagerController::class, 'delete'])->name('shift.delete');
