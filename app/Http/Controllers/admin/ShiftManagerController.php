@@ -294,6 +294,8 @@ class ShiftManagerController extends Controller
 
         $query = EmployeeAvailability::with(['employee', 'dayTask'])
             ->whereBetween('date', [$startDate, $endDate])
+            ->whereNotNull('place')
+            ->where('place', '<>', '')
             ->orderBy('date');
 
         if ($placeFilter) {

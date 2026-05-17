@@ -46,11 +46,12 @@
                                 'nusle' => 'bg-danger',
                                 'event' => 'bg-info text-dark',
                             ];
-                            $color = $badgeColors[$place] ?? 'bg-secondary';
+                            $color = $badgeColors[$place] ?? 'bg-secondary text-white';
+                            $placeLabel = $place ? ucfirst($place) : 'Unknown';
                         @endphp
 
                         <span class="badge {{ $color }} p-2">
-                            {{ ucfirst($place) }}
+                            {{ $placeLabel }}
                         </span>
                     </td>
 
@@ -71,13 +72,13 @@
 
         @empty
             <tr>
-                <td colspan="5" class="text-muted text-center">No shifts found</td>
+                <td colspan="4" class="text-muted text-center">No shifts found</td>
             </tr>
         @endforelse
 
 
         <tr>
-            <td colspan="5" class="text-muted text-center fw-bold">
+            <td colspan="4" class="text-muted text-center fw-bold">
                 Weekly Total Hour: {{ $weeklyTotal ?? 0 }} hours
             </td>
         </tr>
