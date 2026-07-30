@@ -17,6 +17,8 @@ return new class extends Migration
             $table->date('date'); // আজকের তারিখ
             $table->string('day'); // Monday, Tuesday etc.
             $table->string('place'); // andel / nusle / event
+            $table->decimal('nusle_total_tips', 10, 2)->nullable();
+            $table->decimal('andel_total_tips', 10, 2)->nullable();
             $table->decimal('worked_hours', 5, 2); // কত ঘণ্টা কাজ করেছে
             $table->timestamps();
         });

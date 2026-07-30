@@ -10,15 +10,19 @@
                 @endfor
 
                 <th>Nusle Hours</th>
+                <th>Nusle Tips</th>
+
                 <th>Andel Hours</th>
+                <th>Andel Tips</th>
+
+                <th>Event Hours</th>
 
                 <th>Total Hours</th>
+
                 <th>Nusle Salary</th>
                 <th>Andel Salary</th>
 
                 <th>Salary</th>
-
-
             </tr>
         </thead>
 
@@ -42,12 +46,47 @@
                         </td>
                     @endfor
 
-                    <td class="fw-bold">{{ $user->nusle_hours }}</td>
+                    {{-- <td class="fw-bold">{{ $user->nusle_hours }}</td>
                     <td class="fw-bold">{{ $user->andel_hours }}</td>
 
                     <td class="fw-bold">{{ $user->monthly_total_hours }}</td>
 
-                
+
+                    <td class="fw-bold text-primary">
+                        {{ number_format($user->nusle_salary, 2) }} Kč
+                    </td>
+
+                    <td class="fw-bold text-info">
+                        {{ number_format($user->andel_salary, 2) }} Kč
+                    </td>
+
+                    <td class="fw-bold text-success">
+                        {{ number_format($user->calculated_salary, 2) }} Kč
+                    </td> --}}
+                    <td class="fw-bold">
+                        {{ number_format($user->nusle_hours, 2) }}
+                    </td>
+
+                    <td class="fw-bold text-success">
+                        {{ number_format($user->nusle_tips ?? 0, 2) }} Kč
+                    </td>
+
+                    <td class="fw-bold">
+                        {{ number_format($user->andel_hours, 2) }}
+                    </td>
+
+                    <td class="fw-bold text-primary">
+                        {{ number_format($user->andel_tips ?? 0, 2) }} Kč
+                    </td>
+
+                    <td class="fw-bold">
+                        {{ number_format($user->event_hours ?? 0, 2) }}
+                    </td>
+
+                    <td class="fw-bold">
+                        {{ number_format($user->monthly_total_hours, 2) }}
+                    </td>
+
                     <td class="fw-bold text-primary">
                         {{ number_format($user->nusle_salary, 2) }} Kč
                     </td>
@@ -59,7 +98,6 @@
                     <td class="fw-bold text-success">
                         {{ number_format($user->calculated_salary, 2) }} Kč
                     </td>
-
                 </tr>
             @empty
                 <tr>
@@ -78,7 +116,7 @@
                     <td>{{ $dailyTotals[$d] ?? 0 }}</td>
                 @endfor
 
-                <td>{{ $users->sum('nusle_hours') }}</td>
+                {{-- <td>{{ $users->sum('nusle_hours') }}</td>
                 <td>{{ $users->sum('andel_hours') }}</td>
 
                 <td>{{ $totalHoursAllUsers }}</td>
@@ -93,6 +131,35 @@
 
                 <td>
                     {{ number_format($users->sum('andel_salary'), 2) }} Kč
+                </td> --}}
+                <td>{{ number_format($users->sum('nusle_hours'), 2) }}</td>
+
+                <td>
+                    {{ number_format($users->sum('nusle_tips'), 2) }} Kč
+                </td>
+
+                <td>{{ number_format($users->sum('andel_hours'), 2) }}</td>
+
+                <td>
+                    {{ number_format($users->sum('andel_tips'), 2) }} Kč
+                </td>
+
+                <td>
+                    {{ number_format($users->sum('event_hours'), 2) }}
+                </td>
+
+                <td>{{ number_format($totalHoursAllUsers, 2) }}</td>
+
+                <td>
+                    {{ number_format($users->sum('nusle_salary'), 2) }} Kč
+                </td>
+
+                <td>
+                    {{ number_format($users->sum('andel_salary'), 2) }} Kč
+                </td>
+
+                <td>
+                    {{ number_format($users->sum('calculated_salary'), 2) }} Kč
                 </td>
             </tr>
         </tfoot>
