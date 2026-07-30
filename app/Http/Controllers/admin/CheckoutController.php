@@ -116,8 +116,11 @@ class CheckoutController extends Controller
     public function monthlyOverview(Request $request)
     {
         $selectedMonth = $request->get('month', now()->format('Y-m'));
+
         $startOfMonth = \Carbon\Carbon::parse($selectedMonth . '-01');
+
         $daysInMonth = $startOfMonth->daysInMonth;
+
 
         $users = User::with([
             'checkouts' => function ($q) use ($startOfMonth) {
@@ -127,96 +130,333 @@ class CheckoutController extends Controller
             'contract'
         ])->get();
 
+
         $holidays = Holiday::pluck('date')->toArray();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Total Branch Hours
+        |--------------------------------------------------------------------------
+        */
+
+        $allCheckouts = $users->flatMap(function ($user) {
+            return $user->checkouts;
+        });
+
+
+        $totalNusleHours = $allCheckouts
+            ->where('place', 'nusle')
+            ->sum('worked_hours');
+
+
+        $totalAndelHours = $allCheckouts
+            ->where('place', 'andel')
+            ->sum('worked_hours');
+
+
+        $totalEventHours = $allCheckouts
+            ->where('place', 'event')
+            ->sum('worked_hours');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Manager Input Tips
+        |--------------------------------------------------------------------------
+        */
+
+        $tipRow = EmployeeCheckout::whereMonth('date', $startOfMonth->month)
+            ->whereYear('date', $startOfMonth->year)
+            ->whereNotNull('nusle_total_tips')
+            ->first();
+
+
+        $nusleTotalTips = $tipRow->nusle_total_tips ?? 0;
+
+        $andelTotalTips = $tipRow->andel_total_tips ?? 0;
+
+
 
         $dailyTotals = [];
 
+
         foreach ($users as $user) {
+
 
             $nusleHours = 0;
             $andelHours = 0;
+            $eventHours = 0;
+
 
             $nusleSalary = 0;
             $andelSalary = 0;
 
+
+
             foreach ($user->checkouts as $checkout) {
 
+
                 $rate = $user->contract->hourly_rate ?? 0;
-                $dayOfWeek = \Carbon\Carbon::parse($checkout->date)->format('l');
+
+
+                $dayOfWeek = \Carbon\Carbon::parse($checkout->date)
+                    ->format('l');
+
+
                 $isHoliday = in_array($checkout->date, $holidays);
 
-                // multiplier
+
+
                 if ($isHoliday) {
+
                     $multiplier = 1.2;
-                } elseif (in_array($dayOfWeek, ['Saturday', 'Sunday'])) {
-                    $multiplier = 1;
+
                 } else {
+
                     $multiplier = 1;
+
                 }
 
-                $amount = $checkout->worked_hours * $rate * $multiplier;
 
-                // 🔥 branch wise calculation
-                if ($checkout->place === 'nusle') {
+
+                $amount =
+                    $checkout->worked_hours
+                    *
+                    $rate
+                    *
+                    $multiplier;
+
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Branch Hours + Salary
+                |--------------------------------------------------------------------------
+                */
+
+
+                if ($checkout->place == 'nusle') {
+
                     $nusleHours += $checkout->worked_hours;
+
                     $nusleSalary += $amount;
+
                 }
 
-                if ($checkout->place === 'andel') {
+
+
+                if ($checkout->place == 'andel') {
+
                     $andelHours += $checkout->worked_hours;
+
                     $andelSalary += $amount;
+
                 }
 
-                // daily totals
+
+
+                if ($checkout->place == 'event') {
+
+                    $eventHours += $checkout->worked_hours;
+
+                }
+
+
+
+                /*
+                | Daily total
+                */
+
                 $day = \Carbon\Carbon::parse($checkout->date)->day;
-                $dailyTotals[$day] = ($dailyTotals[$day] ?? 0) + $checkout->worked_hours;
+
+                $dailyTotals[$day] =
+                    ($dailyTotals[$day] ?? 0)
+                    +
+                    $checkout->worked_hours;
+
+
             }
 
-            // attach data
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Tips Calculation
+            |--------------------------------------------------------------------------
+            */
+
+
+            $nusleTips = 0;
+
+            if ($totalNusleHours > 0) {
+
+                $nusleTips =
+                    ($nusleHours / $totalNusleHours)
+                    *
+                    $nusleTotalTips;
+
+            }
+
+
+
+            $andelTips = 0;
+
+
+            if ($totalAndelHours > 0) {
+
+                $andelTips =
+                    ($andelHours / $totalAndelHours)
+                    *
+                    $andelTotalTips;
+
+            }
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Attach Data For Blade
+            |--------------------------------------------------------------------------
+            */
+
+
             $user->nusle_hours = $nusleHours;
+
             $user->andel_hours = $andelHours;
 
+            $user->event_hours = $eventHours;
+
+
+
+            $user->nusle_tips = $nusleTips;
+
+            $user->andel_tips = $andelTips;
+
+
+
             $user->nusle_salary = $nusleSalary;
+
             $user->andel_salary = $andelSalary;
 
-            $user->monthly_total_hours = $nusleHours + $andelHours;
-            $user->calculated_salary = $nusleSalary + $andelSalary;
+
+
+            $user->monthly_total_hours =
+                $nusleHours
+                +
+                $andelHours
+                +
+                $eventHours;
+
+
+
+            /*
+            Salary + Tips
+            */
+
+            $user->calculated_salary =
+                $nusleSalary
+                +
+                $andelSalary
+                +
+                $nusleTips
+                +
+                $andelTips;
+
         }
 
+
+
         $users = $users->filter(function ($u) {
+
             return ($u->monthly_total_hours ?? 0) > 0;
+
         });
+
+
 
         $totalHoursAllUsers = array_sum($dailyTotals);
 
+
+
         $badgeColors = [
+
             'andel' => 'bg-primary',
+
             'nusle' => 'bg-success',
+
             'event' => 'bg-warning text-dark',
+
         ];
 
+
+
         if ($request->ajax()) {
+
+
             return response()->json([
-                'html' => view('backend.pages.checkout.partials.monthly_table', compact(
-                    'users',
-                    'selectedMonth',
-                    'startOfMonth',
-                    'daysInMonth',
-                    'dailyTotals',
-                    'totalHoursAllUsers',
-                    'badgeColors'
-                ))->render()
+
+                'html' => view(
+                    'backend.pages.checkout.partials.monthly_table',
+                    compact(
+                        'users',
+                        'selectedMonth',
+                        'startOfMonth',
+                        'daysInMonth',
+                        'dailyTotals',
+                        'totalHoursAllUsers',
+                        'badgeColors',
+                        'nusleTotalTips',
+                        'andelTotalTips'
+                    )
+                )->render(),
+
+                'nusleTotalTips' => $nusleTotalTips,
+
+                'andelTotalTips' => $andelTotalTips
+
             ]);
+
         }
 
-        return view('backend.pages.checkout.monthly_overview', compact(
-            'users',
-            'selectedMonth',
-            'startOfMonth',
-            'daysInMonth',
-            'dailyTotals',
-            'totalHoursAllUsers',
-            'badgeColors'
-        ));
+
+
+        return view(
+            'backend.pages.checkout.monthly_overview',
+            compact(
+                'users',
+                'selectedMonth',
+                'startOfMonth',
+                'daysInMonth',
+                'dailyTotals',
+                'totalHoursAllUsers',
+                'badgeColors',
+                'nusleTotalTips',
+                'andelTotalTips'
+            )
+        );
+    }
+
+    public function saveMonthlyTips(Request $request)
+    {
+        $request->validate([
+            'month' => 'required',
+            'nusle_total_tips' => 'nullable|numeric',
+            'andel_total_tips' => 'nullable|numeric',
+        ]);
+
+        $month = \Carbon\Carbon::parse($request->month . '-01');
+
+        EmployeeCheckout::whereMonth('date', $month->month)
+            ->whereYear('date', $month->year)
+            ->update([
+                'nusle_total_tips' => $request->nusle_total_tips ?? 0,
+                'andel_total_tips' => $request->andel_total_tips ?? 0,
+            ]);
+
+        return response()->json([
+            'success' => true
+        ]);
     }
 }

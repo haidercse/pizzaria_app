@@ -11,7 +11,10 @@ class EmployeeCheckout extends Model
         'date',
         'day',
         'place',
+        'nusle_total_tips',
+        'andel_total_tips',
         'worked_hours',
+
     ];
 
     public function employee()

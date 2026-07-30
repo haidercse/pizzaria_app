@@ -303,6 +303,7 @@ class ShiftManagerController extends Controller
         }
 
         $shifts = $query->get()->groupBy('date');
+        
 
         $weeklyTotal = $shifts->flatten()->sum('hours');
 

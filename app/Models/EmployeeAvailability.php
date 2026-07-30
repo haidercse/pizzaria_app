@@ -23,6 +23,8 @@ class EmployeeAvailability extends Model
         'month',
         'year',
         'place',
+        'nusle_total_tips',
+        'andel_total_tips',
     ];
 
     public function getCalculatedHoursAttribute()
