@@ -125,7 +125,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout/store', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::post('/checkout/update/{id}', [CheckoutController::class, 'update'])->name('checkout.update');
     Route::get('/checkout/monthly_overview', [CheckoutController::class, 'monthlyOverview'])->name('checkout.monthly_overview');
-
+    
+    Route::post('/checkout/save-monthly-tips', [CheckoutController::class, 'saveMonthlyTips'])
+        ->name('checkout.save.monthly.tips');
 
     // Holiday Routes
     Route::resource('holidays', HolidayController::class);
