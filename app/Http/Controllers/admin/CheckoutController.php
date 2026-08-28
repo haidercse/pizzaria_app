@@ -336,9 +336,19 @@ class CheckoutController extends Controller
 
 
 
-            $user->nusle_salary = $nusleSalary;
+            // $user->nusle_salary = $nusleSalary;
 
-            $user->andel_salary = $andelSalary;
+            // $user->andel_salary = $andelSalary;
+            // Branch Salary + Tips
+            $user->nusle_salary =
+                $nusleSalary
+                +
+                $nusleTips;
+
+            $user->andel_salary =
+                $andelSalary
+                +
+                $andelTips;
 
 
 
@@ -355,14 +365,19 @@ class CheckoutController extends Controller
             Salary + Tips
             */
 
+            // $user->calculated_salary =
+            //     $nusleSalary
+            //     +
+            //     $andelSalary
+            //     +
+            //     $nusleTips
+            //     +
+            //     $andelTips;
+            // Total Salary
             $user->calculated_salary =
-                $nusleSalary
+                $user->nusle_salary
                 +
-                $andelSalary
-                +
-                $nusleTips
-                +
-                $andelTips;
+                $user->andel_salary;
 
         }
 

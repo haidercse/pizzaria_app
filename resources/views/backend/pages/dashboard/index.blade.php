@@ -3,6 +3,35 @@
 @section('title')
     Dashboard-page
 @endsection
+```blade
+@push('styles')
+    <style>
+        .catering-day {
+            min-height: 120px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .catering-event {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            line-height: 1.3;
+            text-align: center;
+        }
+
+        .catering-event-text {
+            display: block;
+            max-width: 100%;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+    </style>
+@endpush
+```
 
 @section('admin-content')
     <div class="main-content">
@@ -29,7 +58,7 @@
                             @endphp
 
                             @for ($date = $start->copy(); $date->lte($end); $date->addDay())
-                                <div class="col-6 col-sm-4 col-md-3 col-lg-2 border p-2"
+                                {{-- <div class="col-6 col-sm-4 col-md-3 col-lg-2 border p-2"
                                     style="min-height: 120px; border-radius:10px;">
                                     <h6 class="fw-bold">{{ $date->format('d D') }}</h6>
 
@@ -44,6 +73,14 @@
                                         </div>
                                     @else
                                         <span class="text-muted small">No Events</span>
+                                    @endif
+                                </div> --}}
+                                <div class="col-6 col-sm-4 col-md-3 col-lg-2 border p-2 catering-day">
+                                    <h6 class="fw-bold"> {{ $date->format('d D') }} </h6> @php $eventItem = $events->firstWhere('event_date', $date->format('Y-m-d'))->note ?? null; @endphp @if ($eventItem)
+                                        <div class="badge bg-info text-dark mt-2 catering-event"> <span
+                                                class="catering-event-text"> {{ $eventItem }} </span> </div>
+                                    @else
+                                        <span class="text-muted small"> No Events </span>
                                     @endif
                                 </div>
                             @endfor
