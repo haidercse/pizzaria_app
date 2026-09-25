@@ -191,7 +191,7 @@ class CheckoutController extends Controller
 
             $nusleSalary = 0;
             $andelSalary = 0;
-
+            $eventSalary = 0;
 
 
             foreach ($user->checkouts as $checkout) {
@@ -257,9 +257,8 @@ class CheckoutController extends Controller
 
 
                 if ($checkout->place == 'event') {
-
                     $eventHours += $checkout->worked_hours;
-
+                    $eventSalary += $amount;
                 }
 
 
@@ -350,7 +349,7 @@ class CheckoutController extends Controller
                 +
                 $andelTips;
 
-
+            $user->event_salary = $eventSalary;
 
             $user->monthly_total_hours =
                 $nusleHours
@@ -377,7 +376,9 @@ class CheckoutController extends Controller
             $user->calculated_salary =
                 $user->nusle_salary
                 +
-                $user->andel_salary;
+                $user->andel_salary
+                +
+                $user->event_salary;
 
         }
 

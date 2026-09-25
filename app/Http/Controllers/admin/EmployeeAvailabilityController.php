@@ -14,8 +14,23 @@ class EmployeeAvailabilityController extends Controller
     public function index()
     {
         $availabilities = EmployeeAvailability::where('employee_id', Auth::id())
-            ->orderBy('date', 'asc')
-            ->get();
+            ->get()
+            ->sort(function ($a, $b) {
+                $dateA = \Carbon\Carbon::parse($a->date);
+                $dateB = \Carbon\Carbon::parse($b->date);
+
+                // 1. Year-Month descending (latest month first)
+                $ymA = $dateA->format('Y-m');
+                $ymB = $dateB->format('Y-m');
+
+                if ($ymA !== $ymB) {
+                    return $ymB <=> $ymA;   // desc
+                }
+
+                // 2. Same month → day ascending
+                return $dateA->day <=> $dateB->day;
+            })
+            ->values();
 
         return view('backend.pages.availability.index', compact('availabilities'));
     }
@@ -48,7 +63,7 @@ class EmployeeAvailabilityController extends Controller
         $employeeId = auth()->id();
 
         foreach ($request->date as $i => $date) {
-            
+
             $exists = EmployeeAvailability::where('employee_id', $employeeId)
                 ->where('date', $date)
                 ->exists();
@@ -60,14 +75,14 @@ class EmployeeAvailabilityController extends Controller
             }
 
             EmployeeAvailability::create([
-                'employee_id'   => auth()->id(),
-                'date'          => $date,
+                'employee_id' => auth()->id(),
+                'date' => $date,
                 'preferred_time' => $request->preferred_time[$i],
-                'start_time'    => $request->start_time[$i] ?? null,
-                'end_time'      => $request->end_time[$i] ?? null,
+                'start_time' => $request->start_time[$i] ?? null,
+                'end_time' => $request->end_time[$i] ?? null,
                 'user_start_time' => $request->start_time[$i] ?? null,
-                'user_end_time'   => $request->end_time[$i] ?? null,
-                'note'          => $request->note[$i] ?? null,
+                'user_end_time' => $request->end_time[$i] ?? null,
+                'note' => $request->note[$i] ?? null,
             ]);
         }
 

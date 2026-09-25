@@ -3,7 +3,7 @@
 @section('title')
     Dashboard-page
 @endsection
-```blade
+
 @push('styles')
     <style>
         .catering-day {
