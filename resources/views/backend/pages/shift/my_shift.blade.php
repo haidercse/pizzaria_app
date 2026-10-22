@@ -11,7 +11,8 @@
         </div> --}}
         <div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
             @foreach ($weeks as $week)
-                <button class="btn btn-outline-primary week-btn" data-start="{{ $week['start'] }}">
+                <button class="btn {{ $week['start'] === $startDate ? 'btn-primary' : 'btn-outline-primary' }} week-btn"
+                    data-start="{{ $week['start'] }}">
                     {{ $week['label'] }}
                 </button>
             @endforeach
@@ -33,6 +34,8 @@
     <script>
         $(document).on('click', '.week-btn', function() {
             let startDate = $(this).data('start');
+            $('.week-btn').removeClass('btn-primary').addClass('btn-outline-primary');
+            $(this).removeClass('btn-outline-primary').addClass('btn-primary');
             $.ajax({
                 url: "{{ route('shift.employee') }}",
                 type: "GET",
@@ -46,6 +49,9 @@
                 },
                 success: function(data) {
                     $('#shiftList').html(data);
+                },
+                error: function() {
+                    $('#shiftList').html('<div class="alert alert-danger">Could not load shifts. Please try again.</div>');
                 }
             });
         });

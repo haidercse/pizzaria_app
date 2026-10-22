@@ -40,6 +40,7 @@ class UserController extends Controller
         $user->email = $request->email;
         $user->phone = $request->phone;
         $user->password = Hash::make('12345678');
+        $user->color = $this->nextScheduleColor();
         $user->save();
 
         // Assign role by ID
@@ -119,6 +120,41 @@ class UserController extends Controller
                 'salary' => $user->contract->hourly_rate ?? '-',
             ]
         ]);
+    }
+
+    public function updateColor(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+        ]);
+
+        $user = User::findOrFail($id);
+        $user->color = $validated['color'];
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Schedule color updated successfully.',
+        ]);
+    }
+
+    private function nextScheduleColor(): string
+    {
+        $palette = [
+            '#2563eb',
+            '#059669',
+            '#7c3aed',
+            '#dc2626',
+            '#d97706',
+            '#0891b2',
+            '#db2777',
+            '#4f46e5',
+        ];
+        $usedColors = User::whereIn('color', $palette)->pluck('color')->countBy();
+
+        return collect($palette)
+            ->sortBy(fn ($color) => $usedColors->get($color, 0))
+            ->first();
     }
 
 

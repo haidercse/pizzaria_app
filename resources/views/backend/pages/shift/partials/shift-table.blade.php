@@ -6,7 +6,7 @@
             <th>Start</th>
             <th>End</th>
             <th>Predefined Shift</th>
-            <th>Assigned Time (Start to End)</th>
+            <th>Employee Availability (Start to End)</th>
             <th>Hours</th>
             <th>Total Hours</th>
             <th>Place</th>

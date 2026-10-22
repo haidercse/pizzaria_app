@@ -6,6 +6,11 @@
 @section('breadcrumb-current', 'Edit Availability')
 
 @section('admin-content')
+    @php
+        $availabilityMinDate = $latestPublishedShiftDate
+            ? \Carbon\Carbon::parse($latestPublishedShiftDate)->addDay()->toDateString()
+            : null;
+    @endphp
     <div class="container mt-4">
         <div class="row justify-content-center">
             <div class="col-lg-6">
@@ -14,6 +19,12 @@
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <h4 class="mb-3 text-center">📅 Edit Your Availability</h4>
+                        @if ($latestPublishedShiftDate)
+                            <div class="alert alert-info">
+                                Shifts are published through {{ \Carbon\Carbon::parse($latestPublishedShiftDate)->format('d M Y') }}.
+                                Availability can only be set from {{ \Carbon\Carbon::parse($availabilityMinDate)->format('d M Y') }} onward.
+                            </div>
+                        @endif
                         <form id="editAvailabilityForm" action="{{ route('availability.update', $availability->id) }}"
                             method="POST">
                             @csrf
@@ -21,6 +32,7 @@
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Select Date</label>
                                 <input type="date" id="dateInput" name="date" class="form-control"
+                                    @if ($availabilityMinDate) min="{{ $availabilityMinDate }}" @endif
                                     value="{{ $availability->date }}" required>
                                 <div class="invalid-feedback" id="dateError"></div>
                             </div>
@@ -104,7 +116,15 @@
     </div>
 
     <script>
+        const publishedThrough = @json($latestPublishedShiftDate);
         document.getElementById('dateInput').addEventListener('change', function() {
+            if (publishedThrough && this.value && this.value <= publishedThrough) {
+                alert(`Shifts are published through ${publishedThrough}. Choose a date after that.`);
+                this.value = '';
+                document.getElementById('dayInput').value = '';
+                return;
+            }
+
             let date = new Date(this.value);
             if (!isNaN(date)) {
                 let options = {

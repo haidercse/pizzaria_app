@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::post('pizza_dough/upload', [PizzaDoughController::class, 'upload'])->name('file.upload');
 
     Route::resource('users', UserController::class);
+    Route::patch('/users/{user}/color', [UserController::class, 'updateColor'])->name('users.color');
     Route::post('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset.password');
 
     //profile route
@@ -114,6 +115,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/availability/history/{id}', [EmployeeAvailabilityController::class, 'history'])
         ->name('shift.history');
     Route::get('/shift/all_shifts', [ShiftManagerController::class, 'allShifts'])->name('all.shifts');
+    Route::get('/shift/schedule', [ShiftManagerController::class, 'schedule'])->name('shift.schedule');
     // DayTask Routes
     Route::resource('day_tasks', DayTaskController::class);
 

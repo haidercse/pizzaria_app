@@ -46,7 +46,7 @@
                     <th>Start</th>
                     <th>End</th>
                     <th>Predefined Shift</th>
-                    <th>Employee Assigned Time</th>
+                    <th>Employee Availability</th>
                     <th>Hours</th>
                     <th>Total Hours</th>
                     <th>Place</th>

@@ -2,10 +2,21 @@
 @section('title', 'Set Monthly Availability')
 
 @section('admin-content')
+    @php
+        $availabilityMinDate = $latestPublishedShiftDate
+            ? \Carbon\Carbon::parse($latestPublishedShiftDate)->addDay()->toDateString()
+            : null;
+    @endphp
     <div class="container mt-4">
         <div class="card shadow-sm">
             <div class="card-body">
                 <h4 class="mb-3 text-center">📅 Submit Your Monthly Availability</h4>
+                @if ($latestPublishedShiftDate)
+                    <div class="alert alert-info">
+                        Shifts are published through {{ \Carbon\Carbon::parse($latestPublishedShiftDate)->format('d M Y') }}.
+                        You can submit availability from {{ \Carbon\Carbon::parse($availabilityMinDate)->format('d M Y') }} onward.
+                    </div>
+                @endif
 
                 <div id="alertBox"></div>
 
@@ -26,7 +37,8 @@
                             </thead>
                             <tbody>
                                 <tr class="availability-row">
-                                    <td><input type="date" name="date[]" class="form-control dateInput" required></td>
+                                    <td><input type="date" name="date[]" class="form-control dateInput"
+                                            @if ($availabilityMinDate) min="{{ $availabilityMinDate }}" @endif required></td>
                                     <td><input type="text" class="form-control dayInput" readonly placeholder="Day"></td>
                                     <td>
                                         <select name="preferred_time[]" class="form-select form-control preferred_time"
@@ -79,6 +91,23 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const publishedThrough = @json($latestPublishedShiftDate);
+            const alertBox = document.getElementById('alertBox');
+
+            function showErrors(messages) {
+                alertBox.replaceChildren();
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-danger';
+                const list = document.createElement('ul');
+                messages.forEach(message => {
+                    const item = document.createElement('li');
+                    item.textContent = message;
+                    list.appendChild(item);
+                });
+                alert.appendChild(list);
+                alertBox.appendChild(alert);
+            }
+
             function attachEvents(row) {
                 row.querySelector('.removeRow').addEventListener('click', function() {
                     if (document.querySelectorAll('.availability-row').length > 1) {
@@ -89,6 +118,13 @@
                 });
 
                 row.querySelector('.dateInput').addEventListener('change', function() {
+                    if (publishedThrough && this.value && this.value <= publishedThrough) {
+                        alert(`Shifts are published through ${publishedThrough}. Choose a date after that.`);
+                        this.value = '';
+                        row.querySelector('.dayInput').value = '';
+                        return;
+                    }
+
                     let date = new Date(this.value);
                     if (!isNaN(date)) {
                         let options = {
@@ -142,24 +178,19 @@
                     })
                     .then(res => res.json())
                     .then(data => {
-                        let alertBox = document.getElementById('alertBox');
-                        alertBox.innerHTML = "";
-
                         if (data.errors) {
-                            let errors = "<div class='alert alert-danger'><ul>";
-                            Object.values(data.errors).forEach(msg => {
-                                errors += `<li>${msg}</li>`;
-                            });
-                            errors += "</ul></div>";
-                            alertBox.innerHTML = errors;
+                            showErrors(Object.values(data.errors).flat());
                         } else if (data.success) {
-                            alertBox.innerHTML =
-                                `<div class="alert alert-success">${data.success}</div>`;
+                            alertBox.replaceChildren();
+                            const success = document.createElement('div');
+                            success.className = 'alert alert-success';
+                            success.textContent = data.success;
+                            alertBox.appendChild(success);
                             form.reset();
                             document.querySelectorAll('.dayInput').forEach(input => input.value = '');
                         }
                     })
-                    .catch(err => console.error(err));
+                    .catch(() => showErrors(['Availability could not be saved. Please try again.']));
             });
         });
         // ✅ This should be placed AFTER the DOMContentLoaded block

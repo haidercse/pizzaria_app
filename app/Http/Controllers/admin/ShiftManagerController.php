@@ -200,8 +200,10 @@ class ShiftManagerController extends Controller
 
     public function employeeShifts(Request $request)
     {
-        $startDate = $request->get('start_date', now()->startOfMonth()->toDateString());
-        $endDate = \Carbon\Carbon::parse($startDate)->addDays(6)->toDateString();
+        $startDate = Carbon::parse($request->get('start_date', now()->toDateString()))
+            ->startOfWeek(Carbon::MONDAY)
+            ->toDateString();
+        $endDate = Carbon::parse($startDate)->endOfWeek(Carbon::SUNDAY)->toDateString();
 
         $shifts = EmployeeAvailability::with(['employee', 'dayTask'])
             ->whereBetween('date', [$startDate, $endDate])
@@ -222,17 +224,8 @@ class ShiftManagerController extends Controller
             })->sum('hours');
         })->sum();
         // সব মাসের জন্য সপ্তাহ ভাগ করা
-        $monthStart = \Carbon\Carbon::parse(now()->startOfMonth());
-        $weeks = [];
-        for ($i = 0; $i < 6; $i++) {
-            $weekStart = $monthStart->copy()->addDays($i * 7);
-            $weekEnd = $weekStart->copy()->addDays(6);
-            $weeks[] = [
-                'start' => $weekStart->toDateString(),
-                'end' => $weekEnd->toDateString(),
-                'label' => $weekStart->format('d M') . ' - ' . $weekEnd->format('d M'),
-            ];
-        }
+        $monthStart = now()->startOfMonth();
+        $weeks = $this->weeksForMonth($monthStart);
         // মাসিক মোট ঘন্টা
         $monthEnd = $monthStart->copy()->endOfMonth();
         $monthlyTotal = EmployeeAvailability::whereBetween('date', [$monthStart, $monthEnd])->sum('hours');
@@ -287,8 +280,10 @@ class ShiftManagerController extends Controller
 
     public function allShifts(Request $request)
     {
-        $startDate = $request->get('start_date', now()->startOfMonth()->toDateString());
-        $endDate = \Carbon\Carbon::parse($startDate)->addDays(6)->toDateString();
+        $startDate = Carbon::parse($request->get('start_date', now()->toDateString()))
+            ->startOfWeek(Carbon::MONDAY)
+            ->toDateString();
+        $endDate = Carbon::parse($startDate)->endOfWeek(Carbon::SUNDAY)->toDateString();
 
         $placeFilter = $request->get('place'); // filter by place
 
@@ -307,17 +302,8 @@ class ShiftManagerController extends Controller
 
         $weeklyTotal = $shifts->flatten()->sum('hours');
 
-        $monthStart = \Carbon\Carbon::parse(now()->startOfMonth());
-        $weeks = [];
-        for ($i = 0; $i < 6; $i++) {
-            $weekStart = $monthStart->copy()->addDays($i * 7);
-            $weekEnd = $weekStart->copy()->addDays(6);
-            $weeks[] = [
-                'start' => $weekStart->toDateString(),
-                'end' => $weekEnd->toDateString(),
-                'label' => $weekStart->format('d M') . ' - ' . $weekEnd->format('d M'),
-            ];
-        }
+        $monthStart = now()->startOfMonth();
+        $weeks = $this->weeksForMonth($monthStart);
 
         $monthEnd = $monthStart->copy()->endOfMonth();
         $monthlyTotal = EmployeeAvailability::whereBetween('date', [$monthStart, $monthEnd])->sum('hours');
@@ -340,6 +326,62 @@ class ShiftManagerController extends Controller
             'weeklyTotal',
             'monthlyTotal'
         ));
+    }
+
+    public function schedule(Request $request)
+    {
+        $validated = $request->validate([
+            'start_date' => ['required', 'date'],
+            'place' => ['nullable', 'in:andel,nusle,event'],
+        ]);
+
+        $startDate = Carbon::parse($validated['start_date'])
+            ->startOfWeek(Carbon::MONDAY);
+        $endDate = $startDate->copy()->endOfWeek(Carbon::SUNDAY);
+
+        $shifts = EmployeeAvailability::with('employee')
+            ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->whereNotNull('place')
+            ->where('place', '<>', '')
+            ->whereNotNull('start_time')
+            ->whereNotNull('end_time')
+            ->where('start_time', '<>', '00:00:00')
+            ->where('end_time', '<>', '00:00:00')
+            ->when($validated['place'] ?? null, function ($query, $place) {
+                $query->where('place', $place);
+            })
+            ->orderBy('date')
+            ->orderBy('start_time')
+            ->get()
+            ->groupBy('date');
+        $users = User::where('status', 1)->orderBy('name')->get();
+
+        return view('backend.schedule', [
+            'shifts' => $shifts,
+            'users' => $users,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'place' => $validated['place'] ?? null,
+        ]);
+    }
+
+    private function weeksForMonth(Carbon $month): array
+    {
+        $weekStart = $month->copy()->startOfMonth()->startOfWeek(Carbon::MONDAY);
+        $monthEnd = $month->copy()->endOfMonth();
+        $weeks = [];
+
+        while ($weekStart->lte($monthEnd)) {
+            $weekEnd = $weekStart->copy()->endOfWeek(Carbon::SUNDAY);
+            $weeks[] = [
+                'start' => $weekStart->toDateString(),
+                'end' => $weekEnd->toDateString(),
+                'label' => $weekStart->format('d M') . ' - ' . $weekEnd->format('d M'),
+            ];
+            $weekStart->addWeek();
+        }
+
+        return $weeks;
     }
 
     public function weekOverview(Request $request)

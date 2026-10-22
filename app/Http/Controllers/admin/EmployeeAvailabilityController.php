@@ -37,7 +37,9 @@ class EmployeeAvailabilityController extends Controller
     // Show form
     public function create()
     {
-        return view('backend.pages.availability.create');
+        $latestPublishedShiftDate = $this->latestPublishedShiftDate();
+
+        return view('backend.pages.availability.create', compact('latestPublishedShiftDate'));
     }
 
     // Store data
@@ -60,6 +62,20 @@ class EmployeeAvailabilityController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()->all()], 422);
         }
+
+        $latestPublishedShiftDate = $this->latestPublishedShiftDate();
+        if ($latestPublishedShiftDate) {
+            foreach ($request->date as $date) {
+                if (\Carbon\Carbon::parse($date)->toDateString() <= $latestPublishedShiftDate) {
+                    return response()->json([
+                        'errors' => [
+                            "Shifts are already published through {$latestPublishedShiftDate}. You can submit availability starting the next day.",
+                        ],
+                    ], 422);
+                }
+            }
+        }
+
         $employeeId = auth()->id();
 
         foreach ($request->date as $i => $date) {
@@ -98,8 +114,14 @@ class EmployeeAvailabilityController extends Controller
             ->firstOrFail();
         $start_time = $availability->start_time ?? '';
         $end_time = $availability->end_time ?? '';
+        $latestPublishedShiftDate = $this->latestPublishedShiftDate();
 
-        return view('backend.pages.availability.edit', compact('availability', 'start_time', 'end_time'));
+        return view('backend.pages.availability.edit', compact(
+            'availability',
+            'start_time',
+            'end_time',
+            'latestPublishedShiftDate'
+        ));
     }
     // Update availability
     public function update(Request $request, $id)
@@ -120,6 +142,18 @@ class EmployeeAvailabilityController extends Controller
         }
 
         $availability = EmployeeAvailability::findOrFail($id);
+        $latestPublishedShiftDate = $this->latestPublishedShiftDate();
+        if ($latestPublishedShiftDate && $request->date <= $latestPublishedShiftDate) {
+            return response()->json([
+                'success' => false,
+                'errors' => [
+                    'date' => [
+                        "Shifts are already published through {$latestPublishedShiftDate}. You can submit availability starting the next day.",
+                    ],
+                ],
+            ], 422);
+        }
+
         $availability->date = $request->date;
         $availability->preferred_time = $request->preferred_time;
         $availability->start_time = $request->start_time;
@@ -155,5 +189,17 @@ class EmployeeAvailabilityController extends Controller
             ->get();
 
         return view('backend.pages.shift.history', compact('history'));
+    }
+
+    private function latestPublishedShiftDate(): ?string
+    {
+        return EmployeeAvailability::query()
+            ->whereNotNull('place')
+            ->where('place', '<>', '')
+            ->whereNotNull('start_time')
+            ->whereNotNull('end_time')
+            ->where('start_time', '<>', '00:00:00')
+            ->where('end_time', '<>', '00:00:00')
+            ->max('date');
     }
 }
