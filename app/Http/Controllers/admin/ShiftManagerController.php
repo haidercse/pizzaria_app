@@ -200,9 +200,10 @@ class ShiftManagerController extends Controller
 
     public function employeeShifts(Request $request)
     {
-        $startDate = Carbon::parse($request->get('start_date', now()->toDateString()))
-            ->startOfWeek(Carbon::MONDAY)
-            ->toDateString();
+        $todayDate = Carbon::today()->toDateString();
+        $startDate = Carbon::parse($request->get('start_date', $todayDate))
+            ->startOfWeek(Carbon::MONDAY);
+        $startDate = $startDate->toDateString();
         $endDate = Carbon::parse($startDate)->endOfWeek(Carbon::SUNDAY)->toDateString();
 
         $shifts = EmployeeAvailability::with(['employee', 'dayTask'])
@@ -231,10 +232,25 @@ class ShiftManagerController extends Controller
         $monthlyTotal = EmployeeAvailability::whereBetween('date', [$monthStart, $monthEnd])->sum('hours');
 
         if ($request->ajax()) {
-            return view('backend.pages.shift.partials.my_shift_table', compact('shifts', 'startDate', 'endDate', 'weeklyTotal', 'monthlyTotal'))->render();
+            return view('backend.pages.shift.partials.my_shift_table', compact(
+                'shifts',
+                'startDate',
+                'endDate',
+                'weeklyTotal',
+                'monthlyTotal',
+                'todayDate'
+            ))->render();
         }
 
-        return view('backend.pages.shift.my_shift', compact('shifts', 'startDate', 'endDate', 'weeks', 'weeklyTotal', 'monthlyTotal'));
+        return view('backend.pages.shift.my_shift', compact(
+            'shifts',
+            'startDate',
+            'endDate',
+            'weeks',
+            'weeklyTotal',
+            'monthlyTotal',
+            'todayDate'
+        ));
     }
     //employee shift filter by month
     // public function employeeShiftsMonth(Request $request)
@@ -280,9 +296,10 @@ class ShiftManagerController extends Controller
 
     public function allShifts(Request $request)
     {
-        $startDate = Carbon::parse($request->get('start_date', now()->toDateString()))
-            ->startOfWeek(Carbon::MONDAY)
-            ->toDateString();
+        $todayDate = Carbon::today()->toDateString();
+        $startDate = Carbon::parse($request->get('start_date', $todayDate))
+            ->startOfWeek(Carbon::MONDAY);
+        $startDate = $startDate->toDateString();
         $endDate = Carbon::parse($startDate)->endOfWeek(Carbon::SUNDAY)->toDateString();
 
         $placeFilter = $request->get('place'); // filter by place
@@ -314,7 +331,8 @@ class ShiftManagerController extends Controller
                 'startDate',
                 'endDate',
                 'weeklyTotal',
-                'monthlyTotal'
+                'monthlyTotal',
+                'todayDate'
             ))->render();
         }
 
@@ -324,7 +342,8 @@ class ShiftManagerController extends Controller
             'endDate',
             'weeks',
             'weeklyTotal',
-            'monthlyTotal'
+            'monthlyTotal',
+            'todayDate'
         ));
     }
 
@@ -386,9 +405,17 @@ class ShiftManagerController extends Controller
 
     public function weekOverview(Request $request)
     {
-        $start = $request->start_date;
-        $end = $request->end_date;
-        $branch = $request->branch;
+        $validated = $request->validate([
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'branch' => ['required', 'in:nusle,andel'],
+            'week_number' => ['required', 'integer', 'min:1', 'max:6'],
+        ]);
+
+        $start = Carbon::parse($validated['start_date']);
+        $end = Carbon::parse($validated['end_date']);
+        $branch = $validated['branch'];
+        $weekNumber = $validated['week_number'];
 
         // 🔹 Get all shifts once
         $allShifts = EmployeeAvailability::with('employee')
@@ -427,6 +454,10 @@ class ShiftManagerController extends Controller
             'totalWeekHours' => $totalWeekHours,
             'hoursPerWeek' => $hoursPerWeek,
             'totalHoursPerWeek' => $totalHoursPerWeek,
+            'weekNumber' => $weekNumber,
+            'weekStart' => $start,
+            'weekEnd' => $end,
+            'branch' => $branch,
         ]);
     }
 }

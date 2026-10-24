@@ -17,7 +17,7 @@
 
                 <th>Event Hours</th>
 
-                <th>Total Hours</th>
+                <th>Assigned / Checkout Hours</th>
 
                 <th>Nusle Salary</th>
                 <th>Andel Salary</th>
@@ -83,8 +83,15 @@
                         {{ number_format($user->event_hours ?? 0, 2) }}
                     </td>
 
-                    <td class="fw-bold">
-                        {{ number_format($user->monthly_total_hours, 2) }}
+                    <td>
+                        <div class="d-flex justify-content-center gap-1">
+                            <span class="badge bg-warning text-dark">
+                                Assigned: {{ number_format($user->assigned_total_hours, 2) }}h
+                            </span>
+                            <span class="badge bg-success">
+                                Checkout: {{ number_format($user->monthly_total_hours, 2) }}h
+                            </span>
+                        </div>
                     </td>
 
                     <td class="fw-bold text-primary">
@@ -148,7 +155,16 @@
                     {{ number_format($users->sum('event_hours'), 2) }}
                 </td>
 
-                <td>{{ number_format($totalHoursAllUsers, 2) }}</td>
+                <td>
+                    <div class="d-flex justify-content-center gap-1">
+                        <span class="badge bg-warning text-dark">
+                            Assigned: {{ number_format($users->sum('assigned_total_hours'), 2) }}h
+                        </span>
+                        <span class="badge bg-success">
+                            Checkout: {{ number_format($totalHoursAllUsers, 2) }}h
+                        </span>
+                    </div>
+                </td>
 
                 <td>
                     {{ number_format($users->sum('nusle_salary'), 2) }} Kč

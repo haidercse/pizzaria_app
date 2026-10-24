@@ -17,7 +17,7 @@
             @endphp
 
             @foreach ($placeGroups as $place => $placeShifts)
-                <tr>
+                <tr class="{{ $date === $todayDate ? 'today-shift-row' : '' }}">
                     {{-- Date column – only 1 time per date --}}
                     <td>
                         {{ \Carbon\Carbon::parse($date)->format('l, d M Y') }}
@@ -58,10 +58,20 @@
                     {{-- Employee List --}}
                     <td>
                         @foreach ($placeShifts as $shift)
-                            {{ $shift->employee->name }}
-                            ({{ \Carbon\Carbon::parse($shift->start_time)->format('H:i') }}
-                            -
-                            {{ \Carbon\Carbon::parse($shift->end_time)->format('H:i') }})
+                            @if ($shift->employee_id == auth()->id())
+                                <span class="my-shift-entry">
+                                    {{ $shift->employee->name }}
+                                    <span class="badge">My shift</span>
+                                    ({{ \Carbon\Carbon::parse($shift->start_time)->format('H:i') }}
+                                    -
+                                    {{ \Carbon\Carbon::parse($shift->end_time)->format('H:i') }})
+                                </span>
+                            @else
+                                {{ $shift->employee->name }}
+                                ({{ \Carbon\Carbon::parse($shift->start_time)->format('H:i') }}
+                                -
+                                {{ \Carbon\Carbon::parse($shift->end_time)->format('H:i') }})
+                            @endif
                             @if (!$loop->last)
                                 ,
                             @endif

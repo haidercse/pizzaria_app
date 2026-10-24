@@ -126,6 +126,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout/create', [CheckoutController::class, 'create'])->name('checkout.create');
     Route::post('/checkout/store', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::post('/checkout/update/{id}', [CheckoutController::class, 'update'])->name('checkout.update');
+    Route::post('/checkout/save-all', [CheckoutController::class, 'saveAll'])->name('checkout.save.all');
     Route::get('/checkout/monthly_overview', [CheckoutController::class, 'monthlyOverview'])->name('checkout.monthly_overview');
     
     Route::post('/checkout/save-monthly-tips', [CheckoutController::class, 'saveMonthlyTips'])

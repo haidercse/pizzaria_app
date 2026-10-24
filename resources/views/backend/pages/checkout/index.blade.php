@@ -3,7 +3,20 @@
 @section('admin-content')
     <div class="container">
         <h5 class="mb-3 text-center">Submit Your Hours (This Month)</h5>
+        <div class="text-center mb-3">
+            <span class="badge bg-primary fs-6">
+                {{ $monthStart->format('F') }} -
+                <span id="monthlyTotalHours">{{ rtrim(rtrim(number_format($monthlyTotalHours, 2, '.', ''), '0'), '.') }}</span>
+                hours
+            </span>
+        </div>
+        <p class="text-muted text-center">Scheduled shift hours are prefilled. You can edit them before updating.</p>
         <div id="checkoutMsg"></div>
+        <div class="text-center mb-3">
+            <button type="button" class="btn btn-primary" id="saveAllCheckouts">
+                Save All Hours
+            </button>
+        </div>
 
         <div class="table-responsive">
             <table class="table table-bordered table-striped text-center align-middle">
@@ -28,20 +41,20 @@
                                 <select class="form-select form-select-sm place-input">
                                     <option value="">-- Select Place --</option>
                                     <option value="andel"
-                                        {{ $day['checkout'] && $day['checkout']->place == 'andel' ? 'selected' : '' }}>Andel
+                                        {{ $day['place'] == 'andel' ? 'selected' : '' }}>Andel
                                     </option>
                                     <option value="nusle"
-                                        {{ $day['checkout'] && $day['checkout']->place == 'nusle' ? 'selected' : '' }}>Nusle
+                                        {{ $day['place'] == 'nusle' ? 'selected' : '' }}>Nusle
                                     </option>
                                     <option value="event"
-                                        {{ $day['checkout'] && $day['checkout']->place == 'event' ? 'selected' : '' }}>Event
+                                        {{ $day['place'] == 'event' ? 'selected' : '' }}>Event
                                     </option>
                                 </select>
                             </td>
                             <td>
                                 <input type="number" step="0.5" min="0" max="24"
                                     class="form-control form-control-sm hours-input"
-                                    value="{{ $day['checkout'] ? $day['checkout']->worked_hours : '' }}">
+                                    value="{{ $day['worked_hours'] }}">
                             </td>
                             <td>
                                 <button class="btn btn-sm btn-success update-btn"
@@ -59,6 +72,90 @@
     @push('scripts')
         <script>
             $(document).ready(function() {
+                function updateMonthlyTotal() {
+                    let total = 0;
+                    $('.hours-input').each(function() {
+                        let hours = parseFloat($(this).val());
+                        if (!isNaN(hours)) {
+                            total += hours;
+                        }
+                    });
+
+                    let formattedTotal = Number(total.toFixed(2)).toString();
+                    $('#monthlyTotalHours').text(formattedTotal || '0');
+                }
+
+                $(document).on('input change', '.hours-input', updateMonthlyTotal);
+
+                $('#saveAllCheckouts').on('click', function() {
+                    let checkouts = [];
+                    let incompleteDate = null;
+
+                    $('tbody tr[data-date]').each(function() {
+                        let row = $(this);
+                        let place = row.find('.place-input').val();
+                        let hours = row.find('.hours-input').val().trim();
+
+                        if (!place && !hours) {
+                            return;
+                        }
+
+                        if (!place || hours === '') {
+                            incompleteDate = row.data('date');
+                            return false;
+                        }
+
+                        checkouts.push({
+                            date: row.data('date'),
+                            place: place,
+                            worked_hours: hours
+                        });
+                    });
+
+                    if (incompleteDate) {
+                        $('#checkoutMsg').html(
+                            '<div class="alert alert-danger">Please select a place and enter hours for ' +
+                            incompleteDate + '.</div>'
+                        );
+                        return;
+                    }
+
+                    if (checkouts.length === 0) {
+                        $('#checkoutMsg').html(
+                            '<div class="alert alert-danger">There are no checkout hours to save.</div>'
+                        );
+                        return;
+                    }
+
+                    let button = $(this);
+                    button.prop('disabled', true);
+
+                    $.ajax({
+                        url: "{{ route('checkout.save.all') }}",
+                        type: 'POST',
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            checkouts: checkouts
+                        },
+                        success: function(res) {
+                            $('#checkoutMsg').html(
+                                '<div class="alert alert-success">' + res.message + '</div>'
+                            );
+                        },
+                        error: function(xhr) {
+                            let msg = xhr.responseJSON && xhr.responseJSON.message
+                                ? xhr.responseJSON.message
+                                : 'Could not save checkout hours. Please try again.';
+                            $('#checkoutMsg').html(
+                                '<div class="alert alert-danger">' + msg + '</div>'
+                            );
+                        },
+                        complete: function() {
+                            button.prop('disabled', false);
+                        }
+                    });
+                });
+
                 $(document).on('click', '.update-btn', function() {
                     let row = $(this).closest('tr');
                     let id = $(this).data('id');

@@ -42,13 +42,15 @@
         border-radius: 10px;
         text-align: center;
     }
+
 </style>
 
 {{-- ✅ Weekly Summary --}}
 
 <div class="mb-3">
     <div class="hours-summary">
-        <h6>Total Hours (Week)</h6>
+        <h6>Total Hours (Week {{ $weekNumber }})</h6>
+        <small>{{ $weekStart->format('d M') }} - {{ $weekEnd->format('d M Y') }}</small>
         <h4>{{ round($totalWeekHours, 2) }}</h4>
     </div>
 </div>

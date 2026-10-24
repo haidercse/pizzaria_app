@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\EmployeeAvailability;
 use App\Models\EmployeeCheckout;
 use App\Models\Holiday;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class CheckoutController extends Controller
@@ -31,13 +33,41 @@ class CheckoutController extends Controller
             ->get()
             ->keyBy('date');
 
+        $shifts = EmployeeAvailability::where('employee_id', $userId)
+            ->whereBetween('date', [$monthStart, $monthEnd])
+            ->whereNotNull('place')
+            ->where('place', '<>', '')
+            ->whereNotNull('start_time')
+            ->whereNotNull('end_time')
+            ->where('start_time', '<>', '00:00:00')
+            ->where('end_time', '<>', '00:00:00')
+            ->get()
+            ->keyBy('date');
+
+        $monthlyTotalHours = 0;
         foreach ($checkouts as $date => $checkout) {
             if (isset($days[$date])) {
                 $days[$date]['checkout'] = $checkout;
             }
         }
 
-        return view('backend.pages.checkout.index', compact('days'));
+        foreach ($days as $date => &$day) {
+            $day['shift'] = $shifts->get($date);
+            $day['worked_hours'] = $day['checkout']->worked_hours
+                ?? $day['shift']->hours
+                ?? '';
+            $day['place'] = $day['checkout']->place
+                ?? $day['shift']->place
+                ?? '';
+            $monthlyTotalHours += (float) ($day['worked_hours'] ?: 0);
+        }
+        unset($day);
+
+        return view('backend.pages.checkout.index', compact(
+            'days',
+            'monthStart',
+            'monthlyTotalHours'
+        ));
     }
     public function create()
     {
@@ -113,6 +143,49 @@ class CheckoutController extends Controller
         ]);
     }
 
+    public function saveAll(Request $request)
+    {
+        $monthStart = now()->startOfMonth()->toDateString();
+        $monthEnd = now()->endOfMonth()->toDateString();
+
+        $validated = $request->validate([
+            'checkouts' => ['required', 'array', 'min:1', 'max:31'],
+            'checkouts.*.date' => [
+                'required',
+                'date_format:Y-m-d',
+                "after_or_equal:{$monthStart}",
+                "before_or_equal:{$monthEnd}",
+            ],
+            'checkouts.*.place' => ['required', 'in:andel,nusle,event'],
+            'checkouts.*.worked_hours' => ['required', 'numeric', 'min:0', 'max:24'],
+        ]);
+
+        $employeeId = auth()->id();
+
+        DB::transaction(function () use ($validated, $employeeId) {
+            foreach ($validated['checkouts'] as $checkoutData) {
+                $date = Carbon::createFromFormat('Y-m-d', $checkoutData['date']);
+
+                EmployeeCheckout::updateOrCreate(
+                    [
+                        'employee_id' => $employeeId,
+                        'date' => $checkoutData['date'],
+                    ],
+                    [
+                        'day' => $date->format('l'),
+                        'place' => $checkoutData['place'],
+                        'worked_hours' => $checkoutData['worked_hours'],
+                    ]
+                );
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All checkout hours saved successfully.',
+        ]);
+    }
+
     public function monthlyOverview(Request $request)
     {
         $selectedMonth = $request->get('month', now()->format('Y-m'));
@@ -124,6 +197,10 @@ class CheckoutController extends Controller
 
         $users = User::with([
             'checkouts' => function ($q) use ($startOfMonth) {
+                $q->whereMonth('date', $startOfMonth->month)
+                    ->whereYear('date', $startOfMonth->year);
+            },
+            'availabilities' => function ($q) use ($startOfMonth) {
                 $q->whereMonth('date', $startOfMonth->month)
                     ->whereYear('date', $startOfMonth->year);
             },
@@ -357,6 +434,7 @@ class CheckoutController extends Controller
                 $andelHours
                 +
                 $eventHours;
+            $user->assigned_total_hours = $user->availabilities->sum('hours');
 
 
 
@@ -386,7 +464,8 @@ class CheckoutController extends Controller
 
         $users = $users->filter(function ($u) {
 
-            return ($u->monthly_total_hours ?? 0) > 0;
+            return ($u->monthly_total_hours ?? 0) > 0
+                || ($u->assigned_total_hours ?? 0) > 0;
 
         });
 

@@ -3,6 +3,37 @@
 
 @push('styles')
 <style>
+    .week-btn.btn-primary {
+        background: linear-gradient(135deg, #2563eb, #0f766e);
+        border-color: transparent;
+        box-shadow: 0 3px 10px rgba(15, 118, 110, .22);
+    }
+
+    .today-shift-row > td {
+        background-color: #ecfeff !important;
+    }
+
+    .today-shift-row > td:first-child {
+        box-shadow: inset 4px 0 #0891b2;
+        font-weight: 700;
+    }
+
+    .my-shift-entry {
+        display: inline-block;
+        margin: .15rem;
+        padding: .3rem .55rem;
+        border: 1px solid #0f766e;
+        border-radius: 999px;
+        background: #ccfbf1;
+        color: #115e59;
+        font-weight: 600;
+    }
+
+    .my-shift-entry .badge {
+        background: #0f766e;
+        color: #fff;
+    }
+
     .schedule-modal-dialog {
         max-width: 1400px;
         width: 95vw;
@@ -63,6 +94,9 @@
             <button class="btn btn-sm {{ $week['start'] === $startDate ? 'btn-primary' : 'btn-outline-primary' }} week-btn"
                 data-start="{{ $week['start'] }}">
                 {{ $week['label'] }}
+                @if ($week['start'] <= $todayDate && \Carbon\Carbon::parse($week['start'])->endOfWeek(\Carbon\Carbon::SUNDAY)->toDateString() >= $todayDate)
+                    <span class="badge bg-light text-primary ms-1">This week</span>
+                @endif
             </button>
         @endforeach
     </div>

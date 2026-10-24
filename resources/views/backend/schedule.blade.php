@@ -128,6 +128,10 @@
         border: 0; height: 24px; padding-left: 5px;
     }
     .excel-weekly-schedule__table .day-title { font-weight: 700; background: #fff; }
+    .excel-weekly-schedule__table .day-start {
+        border-left: 2px solid #94a3b8 !important;
+        box-shadow: inset 3px 0 5px rgba(71, 85, 105, .13);
+    }
     .excel-weekly-schedule__table .time-heading,
     .excel-weekly-schedule__table .time-cell {
         width: 51px; min-width: 51px; background: #fff; text-align: right;
@@ -209,18 +213,20 @@
                         <tr>
                             <th class="day-title"></th>
                             @foreach ($days as $day)
-                                <th class="day-title" colspan="{{ max($locationEmployees->count(), 1) }}">{{ $day->format('l') }}</th>
+                                <th class="day-title day-start"
+                                    colspan="{{ max($locationEmployees->count(), 1) }}">{{ $day->format('l') }}</th>
                             @endforeach
                         </tr>
                         <tr>
                             <th class="time-heading"></th>
                             @foreach ($days as $day)
                                 @forelse ($locationEmployees as $employee)
-                                    <th class="employee-heading" style="background: {{ $employeeColor($employee) }}; color: #111;" title="{{ $employee->name }}">
+                                    <th class="employee-heading {{ $loop->first ? 'day-start' : '' }}"
+                                        style="background: {{ $employeeColor($employee) }}; color: #111;" title="{{ $employee->name }}">
                                         {{ $employeeInitial($employee) }}
                                     </th>
                                 @empty
-                                    <th class="employee-heading">—</th>
+                                    <th class="employee-heading day-start">—</th>
                                 @endforelse
                             @endforeach
                         </tr>
@@ -233,13 +239,13 @@
                                     @php $dayShifts = $locationShiftsByDay->get($day->toDateString(), collect()); @endphp
                                     @forelse ($locationEmployees as $employeeId => $employee)
                                         @php $working = $locationEmployeeWorksAt($dayShifts, $employeeId, $time, $day->toDateString()); @endphp
-                                        <td class="employee-cell"
+                                        <td class="employee-cell {{ $loop->first ? 'day-start' : '' }}"
                                             style="{{ $working ? 'background: '.$employeeColor($employee).'; color: #111;' : 'background: #fff;' }}"
                                             title="{{ $employee->name }} · {{ $day->format('d M') }} · {{ $time }}">
                                             {{ $working ? '1' : '' }}
                                         </td>
                                     @empty
-                                        <td></td>
+                                        <td class="day-start"></td>
                                     @endforelse
                                 @endforeach
                             </tr>
@@ -252,9 +258,10 @@
                                     @php
                                         $slotTotal = collect($timeSlots)->filter(fn ($time) => $locationEmployeeWorksAt($dayShifts, $employeeId, $time, $day->toDateString()))->count();
                                     @endphp
-                                    <td style="background: {{ $employeeColor($employee) }}">{{ $slotTotal }}</td>
+                                    <td class="{{ $loop->first ? 'day-start' : '' }}"
+                                        style="background: {{ $employeeColor($employee) }}">{{ $slotTotal }}</td>
                                 @empty
-                                    <td>0</td>
+                                    <td class="day-start">0</td>
                                 @endforelse
                             @endforeach
                         </tr>

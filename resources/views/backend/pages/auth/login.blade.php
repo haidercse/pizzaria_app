@@ -49,19 +49,17 @@
                             <i class="ti-lock"></i>
                         </div>
 
-                        {{--   <div class="row mb-4 rmber-area">
+                        <div class="row mb-4 rmber-area">
                             <div class="col-6">
                                 <div class="custom-control custom-checkbox mr-sm-2">
                                     <input type="checkbox" class="custom-control-input" id="customControlAutosizing"
-                                        name="remember" {{ old('remember') ? 'checked' : '' }}>
-                                    <label class="custom-control-label" for="customControlAutosizing">Remember
-                                        Me</label>
+                                        name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
+                                    <label class="custom-control-label" for="customControlAutosizing">
+                                        Remember Me
+                                    </label>
                                 </div>
                             </div>
-                           <div class="col-6 text-right">
-                                <a href="#">Forgot Password?</a>
-                            </div> 
-                        </div> --}}
+                        </div>
                         <div class="submit-btn-area">
                             <button id="form_submit" type="submit">Submit <i class="ti-arrow-right"></i></button>
                             {{-- <div class="login-other row mt-4">

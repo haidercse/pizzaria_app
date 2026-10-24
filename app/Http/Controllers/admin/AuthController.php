@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\File;
 
 class AuthController extends Controller
@@ -19,10 +20,28 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|min:6',
+            'remember' => 'sometimes|boolean',
         ]);
-        $remember = $request->filled('remember');
+
+        $remember = $request->boolean('remember');
         if (Auth::attempt($request->only('email', 'password'), $remember)) {
             $request->session()->regenerate();
+
+            if ($remember) {
+                $user = Auth::user();
+                $guard = Auth::guard('web');
+
+                Cookie::queue(Cookie::make(
+                    $guard->getRecallerName(),
+                    implode('|', [
+                        $user->getAuthIdentifier(),
+                        $user->getRememberToken(),
+                        $user->getAuthPassword(),
+                    ]),
+                    43200
+                ));
+            }
+
             return redirect()->route('admin.dashboard');
         }
         
@@ -32,7 +51,7 @@ class AuthController extends Controller
     
     public function logout(Request $request)
     {
-        Auth::logout();
+        Auth::logoutCurrentDevice();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('login');

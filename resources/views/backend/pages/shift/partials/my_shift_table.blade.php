@@ -33,7 +33,7 @@ $myShifts = $dayShifts->filter(function ($s) {
             @endphp
 
             @foreach ($myShifts as $shift)
-                <tr>
+                <tr class="{{ $date === $todayDate ? 'today-shift-row' : '' }}">
                     <td>{{ \Carbon\Carbon::parse($date)->format('l, d M Y') }}</td>
 
                     {{-- Time --}}

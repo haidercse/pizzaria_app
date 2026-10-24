@@ -1,5 +1,25 @@
 @extends('backend.layouts.master')
 @section('title', 'My Shifts')
+
+@push('styles')
+    <style>
+        .week-btn.btn-primary {
+            background: linear-gradient(135deg, #2563eb, #0f766e);
+            border-color: transparent;
+            box-shadow: 0 3px 10px rgba(15, 118, 110, .22);
+        }
+
+        .today-shift-row > td {
+            background-color: #ecfeff !important;
+        }
+
+        .today-shift-row > td:first-child {
+            box-shadow: inset 4px 0 #0891b2;
+            font-weight: 700;
+        }
+    </style>
+@endpush
+
 @section('admin-content')
     <div class="container">
         <h3 class="mb-3 text-center">Employee Shift Schedule</h3>
@@ -14,6 +34,9 @@
                 <button class="btn {{ $week['start'] === $startDate ? 'btn-primary' : 'btn-outline-primary' }} week-btn"
                     data-start="{{ $week['start'] }}">
                     {{ $week['label'] }}
+                    @if ($week['start'] <= $todayDate && \Carbon\Carbon::parse($week['start'])->endOfWeek(\Carbon\Carbon::SUNDAY)->toDateString() >= $todayDate)
+                        <span class="badge bg-light text-primary ms-1">This week</span>
+                    @endif
                 </button>
             @endforeach
         </div>

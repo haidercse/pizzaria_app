@@ -1,5 +1,36 @@
 @extends('backend.layouts.master')
 
+@push('styles')
+    <style>
+        .week-overview-modal.branch-nusle .modal-header {
+            background: #198754;
+            color: #fff;
+        }
+
+        .week-overview-modal.branch-nusle .hours-summary {
+            background: linear-gradient(135deg, #198754, #146c43);
+        }
+
+        .week-overview-modal.branch-nusle .shift-row {
+            background: #d1e7dd;
+        }
+
+        .week-overview-modal.branch-andel .modal-header {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .week-overview-modal.branch-andel .hours-summary {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: #212529;
+        }
+
+        .week-overview-modal.branch-andel .shift-row {
+            background: #fff3cd;
+        }
+    </style>
+@endpush
+
 @section('admin-content')
 
     <div class="container">
@@ -63,7 +94,9 @@
                     @endphp
                     <tr>
                         <td>{{ $emp->name }}</td>
-                        <td>{{ $availability?->preferred_time ?? 'N/A' }}</td>
+                        <td class="{{ $availability?->preferred_time === 'unavailable' ? 'table-danger text-danger fw-bold' : '' }}">
+                            {{ $availability?->preferred_time ?? 'N/A' }}
+                        </td>
                         <td>
                             <select name="start_time[]" class="form-select start-time" data-id="{{ $emp->id }}">
                                 @for ($h = 0; $h < 24; $h++)
@@ -156,7 +189,7 @@
 
     <div class="modal fade" id="weekModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
-            <div class="modal-content">
+            <div class="modal-content week-overview-modal">
                 <div class="modal-header">
                     <h5 class="modal-title">Weekly Overview</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -383,12 +416,14 @@
             // =============================
             let selectedWeek = {
                 start: null,
-                end: null
+                end: null,
+                number: null
             };
 
             $(document).on('click', '.week-btn', function() {
                 selectedWeek.start = $(this).data('start');
                 selectedWeek.end = $(this).data('end');
+                selectedWeek.number = $(this).data('week-number');
 
                 $('#weekModal').modal('show');
             });
@@ -404,13 +439,19 @@
                 }
 
                 let branch = $(this).data('branch');
+                let branchLabel = branch.charAt(0).toUpperCase() + branch.slice(1);
+                $('.week-overview-modal')
+                    .removeClass('branch-nusle branch-andel')
+                    .addClass('branch-' + branch);
+                $('#weekModal .modal-title').text(branchLabel + ' Weekly Overview');
 
                 $('#weekOverviewContent').html('<div class="spinner-border"></div>');
 
                 $.get("{{ route('shift.week.overview') }}", {
                     start_date: selectedWeek.start,
                     end_date: selectedWeek.end,
-                    branch: branch
+                    branch: branch,
+                    week_number: selectedWeek.number
                 }, function(res) {
                     $('#weekOverviewContent').html(res);
                 });
@@ -441,7 +482,8 @@
                 container.append(`
                 <button class="btn btn-sm btn-primary week-btn"
                     data-start="${weekStart.format('YYYY-MM-DD')}"
-                    data-end="${weekEnd.format('YYYY-MM-DD')}">
+                    data-end="${weekEnd.format('YYYY-MM-DD')}"
+                    data-week-number="${weekIndex}">
                     Week ${weekIndex}<br>${label}
                 </button>
             `);
