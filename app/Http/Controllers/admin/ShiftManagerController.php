@@ -4,6 +4,7 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeAvailability;
+use App\Models\EmployeeCheckout;
 use App\Models\ShiftAssignment;
 use App\Models\User;
 use Carbon\Carbon;
@@ -66,21 +67,42 @@ class ShiftManagerController extends Controller
         $month = Carbon::createFromFormat('Y-m', $selectedMonth)->month;
 
         // Save or update
-        $availability = EmployeeAvailability::updateOrCreate(
-            [
-                'employee_id' => $employeeId,
-                'date' => $date,  // ensure this is the date user selected
-            ],
-            [
-                'start_time' => $startTime,
-                'end_time' => $endTime,
-                'preferred_time' => $preferredTime,
-                'hours' => $hours,
-                'place' => $place,
-                'year' => $year,
-                'month' => $month,
-            ]
-        );
+        $availability = DB::transaction(function () use (
+            $employeeId,
+            $date,
+            $startTime,
+            $endTime,
+            $preferredTime,
+            $hours,
+            $place,
+            $year,
+            $month
+        ) {
+            $availability = EmployeeAvailability::updateOrCreate(
+                [
+                    'employee_id' => $employeeId,
+                    'date' => $date,
+                ],
+                [
+                    'start_time' => $startTime,
+                    'end_time' => $endTime,
+                    'preferred_time' => $preferredTime,
+                    'hours' => $hours,
+                    'place' => $place,
+                    'year' => $year,
+                    'month' => $month,
+                ]
+            );
+
+            EmployeeCheckout::where('employee_id', $employeeId)
+                ->where('date', $date)
+                ->update([
+                    'worked_hours' => $availability->hours,
+                    'place' => $availability->place,
+                ]);
+
+            return $availability;
+        });
 
 
         // Recalculate total hours
@@ -390,7 +412,7 @@ class ShiftManagerController extends Controller
         $monthEnd = $month->copy()->endOfMonth();
         $weeks = [];
 
-        while ($weekStart->lte($monthEnd)) {
+        while ($weekStart->lte($monthEnd->copy()->addWeek())) {
             $weekEnd = $weekStart->copy()->endOfWeek(Carbon::SUNDAY);
             $weeks[] = [
                 'start' => $weekStart->toDateString(),
